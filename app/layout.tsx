@@ -15,7 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "V-PRO Services",
   description: "Personal developer porfolio for Victor Ikechukwu",
-  icons: "/vic.jpg",
 };
 
 export default function RootLayout({
