@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSX } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { Github, Linkedin, Twitter } from "lucide-react";
@@ -157,7 +157,7 @@ function SocialCard({
 }: {
   label: string;
   href: string;
-  Icon: () => JSX.Element;
+  Icon: any;
 }) {
   return (
     <Link

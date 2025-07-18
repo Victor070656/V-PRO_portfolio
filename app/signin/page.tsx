@@ -6,11 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 export default function SignInPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
-  // const absoluteCallbackUrl = callbackUrl.startsWith("/")
-  //   ? `${location.origin}${callbackUrl}`
-  //   : callbackUrl;
+  // const searchParams = useSearchParams();
+  // const callbackUrl = searchParams.get("callbackUrl") || "/";
+  // // const absoluteCallbackUrl = callbackUrl.startsWith("/")
+  // //   ? `${location.origin}${callbackUrl}`
+  // //   : callbackUrl;
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

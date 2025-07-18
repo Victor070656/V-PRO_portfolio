@@ -401,7 +401,7 @@ function ContactSection() {
   );
 }
 
-function TimelineIcon({ icon }) {
+function TimelineIcon({ icon }: any) {
   return (
     <div className="absolute -left-1 top-6 flex size-12 items-center justify-center rounded-full bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] text-white shadow-lg group-hover:scale-110 transition-transform duration-300">
       {icon}
