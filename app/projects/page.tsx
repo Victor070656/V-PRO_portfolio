@@ -1,5 +1,7 @@
 import Navbar from "@/components/Navbar";
 import ProjectsGrid from "@/components/ProjectsGrid";
+import { Github, Linkedin, TwitterIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function ProjectPage() {
   return (
@@ -15,18 +17,21 @@ export default function ProjectPage() {
               <span className="w-2 h-2 bg-[var(--accent-color)] rounded-full animate-pulse"></span>
               Portfolio
             </div>
-            
+
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[var(--text-primary)] tracking-tighter mb-6">
               My{" "}
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Projects
               </span>
             </h1>
-            
+
             <p className="text-xl sm:text-2xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed mb-8">
-              A curated collection of projects that demonstrate my expertise in 
-              <span className="text-[var(--accent-color)] font-semibold"> modern web development</span>, 
-              showcasing innovative solutions and clean, scalable code.
+              A curated collection of projects that demonstrate my expertise in
+              <span className="text-[var(--accent-color)] font-semibold">
+                {" "}
+                modern web development
+              </span>
+              , showcasing innovative solutions and clean, scalable code.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
@@ -38,7 +43,9 @@ export default function ProjectPage() {
               </div>
               <div className="hidden sm:block w-1 h-1 bg-[var(--text-secondary)] rounded-full"></div>
               <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-                <span className="text-sm font-medium">25+ Projects completed</span>
+                <span className="text-sm font-medium">
+                  50+ Projects completed
+                </span>
               </div>
             </div>
           </div>
@@ -52,12 +59,14 @@ export default function ProjectPage() {
           <div className="mb-16">
             <div className="flex items-center gap-4 mb-6">
               <div className="h-px bg-gradient-to-r from-transparent via-[var(--accent-color)] to-transparent flex-1"></div>
-              <h2 className="text-2xl font-bold text-[var(--text-primary)] px-4">Featured Work</h2>
+              <h2 className="text-2xl font-bold text-[var(--text-primary)] px-4">
+                Featured Work
+              </h2>
               <div className="h-px bg-gradient-to-r from-transparent via-[var(--accent-color)] to-transparent flex-1"></div>
             </div>
-            
+
             <p className="text-center text-[var(--text-secondary)] max-w-2xl mx-auto">
-              Each project represents a unique challenge solved with creativity, 
+              Each project represents a unique challenge solved with creativity,
               technical expertise, and attention to detail.
             </p>
           </div>
@@ -76,20 +85,20 @@ export default function ProjectPage() {
                   Let's Build Something Amazing Together
                 </h3>
                 <p className="text-[var(--text-secondary)] max-w-2xl mx-auto">
-                  Ready to bring your ideas to life? I'm always excited to work on 
-                  challenging projects and collaborate with forward-thinking teams.
+                  Ready to bring your ideas to life? I'm always excited to work
+                  on challenging projects and collaborate with forward-thinking
+                  teams.
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button className="group relative overflow-hidden bg-[var(--accent-color)] text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[var(--accent-color)]/25 min-w-[200px]">
+                <Link
+                  href="/contact"
+                  className="group relative overflow-hidden bg-[var(--accent-color)] text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[var(--accent-color)]/25 min-w-[200px]"
+                >
                   <span className="relative z-10">Get In Touch</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-                
-                <button className="group relative overflow-hidden bg-transparent text-[var(--text-primary)] px-8 py-4 rounded-xl font-semibold border-2 border-[var(--accent-color)]/30 transition-all duration-300 hover:border-[var(--accent-color)] hover:bg-[var(--accent-color)]/10 min-w-[200px]">
-                  <span className="relative z-10">View All Projects</span>
-                </button>
+                </Link>
               </div>
 
               {/* Contact Info */}
@@ -114,7 +123,7 @@ export default function ProjectPage() {
       {/* Enhanced Footer */}
       <footer className="relative bg-[var(--secondary-color)] mt-24">
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--accent-color)]/50 to-transparent"></div>
-        
+
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             {/* Footer Content */}
@@ -123,27 +132,32 @@ export default function ProjectPage() {
                 Victor Ikechukwu
               </h4>
               <p className="text-[var(--text-secondary)] mb-6">
-                Full-stack developer passionate about creating exceptional digital experiences
+                Full-stack developer passionate about creating exceptional
+                digital experiences
               </p>
-              
+
               {/* Social Links Placeholder */}
               <div className="flex items-center justify-center gap-4 mb-8">
-                <div className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
-                  <span className="text-[var(--accent-color)] text-sm font-bold">in</span>
-                </div>
-                <div className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
-                  <span className="text-[var(--accent-color)] text-sm font-bold">gh</span>
-                </div>
-                <div className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
-                  <span className="text-[var(--accent-color)] text-sm font-bold">tw</span>
-                </div>
+                <Link href="https://linkedin.com/in/victorikechukwu" className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
+                  <Linkedin className="text-[var(--accent-color)] text-sm font-bold"/>
+                    
+                </Link>
+                <Link href="https://github.com/Victor070656" className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
+                  <Github className="text-[var(--accent-color)] text-sm font-bold"/>
+                    
+                </Link>
+                <Link href="https://x.com/victor10722752" className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
+                  <TwitterIcon className="text-[var(--accent-color)] text-sm font-bold" />
+                    
+                </Link>
               </div>
             </div>
 
             {/* Copyright */}
             <div className="pt-8 border-t border-[var(--accent-color)]/20 text-center">
               <p className="text-sm text-[var(--text-secondary)]">
-                © 2024 Victor Ikechukwu. All rights reserved. Built with passion and modern web technologies.
+                © 2024 Victor Ikechukwu. All rights reserved. Built with passion
+                and modern web technologies.
               </p>
             </div>
           </div>

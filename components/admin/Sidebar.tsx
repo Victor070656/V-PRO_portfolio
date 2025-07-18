@@ -66,13 +66,6 @@ export default function Sidebar() {
             <Home className="w-4 h-4" />
             <span>View Site</span>
           </Link>
-          <Link
-            href="/admin/settings"
-            className="flex items-center gap-3 px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--hover-color)] hover:text-[var(--text-primary)] transition-colors text-sm"
-          >
-            <Settings className="w-4 h-4" />
-            <span>Settings</span>
-          </Link>
         </div>
       </div>
 

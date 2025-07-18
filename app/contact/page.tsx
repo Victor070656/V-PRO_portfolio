@@ -77,17 +77,17 @@ export default function ContactPage() {
               <div className="flex justify-center flex-wrap gap-2">
                 <SocialCard
                   label="Twitter"
-                  href="https://twitter.com/"
+                  href="https://x.com/victor10722752"
                   Icon={Twitter}
                 />
                 <SocialCard
                   label="LinkedIn"
-                  href="https://linkedin.com/"
+                  href="https://linkedin.com/in/victorikechukwu"
                   Icon={Linkedin}
                 />
                 <SocialCard
                   label="GitHub"
-                  href="https://github.com/"
+                  href="https://github.com/Victor070656"
                   Icon={Github}
                 />
               </div>
