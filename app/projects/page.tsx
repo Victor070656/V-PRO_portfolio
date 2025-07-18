@@ -138,17 +138,23 @@ export default function ProjectPage() {
 
               {/* Social Links Placeholder */}
               <div className="flex items-center justify-center gap-4 mb-8">
-                <Link href="https://linkedin.com/in/victorikechukwu" className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
-                  <Linkedin className="text-[var(--accent-color)] text-sm font-bold"/>
-                    
+                <Link
+                  href="https://linkedin.com/in/victorikechukwu"
+                  className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer"
+                >
+                  <Linkedin className="text-[var(--accent-color)] text-sm font-bold" />
                 </Link>
-                <Link href="https://github.com/Victor070656" className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
-                  <Github className="text-[var(--accent-color)] text-sm font-bold"/>
-                    
+                <Link
+                  href="https://github.com/Victor070656"
+                  className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer"
+                >
+                  <Github className="text-[var(--accent-color)] text-sm font-bold" />
                 </Link>
-                <Link href="https://x.com/victor10722752" className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer">
+                <Link
+                  href="https://x.com/victor10722752"
+                  className="w-10 h-10 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center border border-[var(--accent-color)]/20 hover:bg-[var(--accent-color)]/20 transition-colors cursor-pointer"
+                >
                   <TwitterIcon className="text-[var(--accent-color)] text-sm font-bold" />
-                    
                 </Link>
               </div>
             </div>
@@ -157,7 +163,7 @@ export default function ProjectPage() {
             <div className="pt-8 border-t border-[var(--accent-color)]/20 text-center">
               <p className="text-sm text-[var(--text-secondary)]">
                 © 2024 Victor Ikechukwu. All rights reserved. Built with passion
-                and modern web technologies.
+                and modern web and mobile technologies.
               </p>
             </div>
           </div>
