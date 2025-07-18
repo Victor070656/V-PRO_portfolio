@@ -1,61 +1,120 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import ProjectCard from "./ProjectCard";
 
-const projects = [
-  {
-    title: "E-commerce Platform",
-    description:
-      "A full-featured e-commerce platform with user authentication, product catalog, shopping cart, and payment gateway integration.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBKZLfKKAci6Vlw8ydT0oY26P1iW4Yy1iVfMQk_oZUTFETukGirzE53edO7lYMFYSPekQ_qHTizBvIlimx9VW1GJp5GcHQYiRpI07Ydh0YmuVo3rJE0wtyiUW6kAY7fE3x2KBpIjHIPn9iBn9upOhosBlx7fFAhr4on2G-o1MTqXb9TGeCZOLGvzlqvL35PwL14fJlHugOO6Cq5gUu6vWEaCXxRcP5CRTssdhlIWl0jWkz5EN5f0fm1uvISbfnFB0zbxVeVRO3RhDBB",
-    link: "#",
-    technologies: ["React", "Node.js", "MongoDB", "Stripe"],
-    category: "Full-stack",
-    status: "Live",
-    featured: true,
-  },
-  {
-    title: "Social Media Dashboard",
-    description:
-      "A dashboard for managing social media accounts, scheduling posts, and analyzing engagement metrics.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDTl7zt9N19wLxsSOLbIxrXogluZQDjbONiFx9JCexi9AHAlvj7QsAuvna0u6F0wbz7OLyq7HrBqwN0M30imSJnyygSRVTFaWn_KAlZCzkiUQCkleKBkL_oGlU0DRrvGPox8F7efiSguqliCPGS9DdzANWE4Cyyce45PNaJUrCL9CDJLhdcUeq03WxePO1zRuzFx5ZpEqIGGl8BFdxRI52k32nEsB3P8Xk9f3m1z24z_4R2d51fDMnfMB-Ki_P3WkXRylx8nMFwkBOO",
-    link: "#",
-    technologies: ["Vue.js", "Firebase", "Chart.js", "Tailwind"],
-    category: "Frontend",
-    status: "Development",
-    featured: false,
-  },
-  {
-    title: "Task Management App",
-    description:
-      "A task management application with features for creating, organizing, and tracking tasks and projects.",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD-Bnj2qgi2_JVqi1_gntXVdOFpPxJnh90lyQiDdE9Z-pMH8zFLBbYwUt0B0ln1lQaZA8fJMWq5yROAMdndU7SqpRgFF_pR22B4BkIAXbpD8TfeuwT54I3KQJGabz0alC0PjQMGx9UHzxk5UwXNaEMXkHLId1B1L0f45Im5fZRdVJPwn9LqcSX6ZJYsyj-QiQHnTplQBghGYZzhVMjHKrAoZM1OS4dWCLxSBvfzGmLwIyLdsseRPW6OLvBoLlsQ0axvtpM3dHVs6kqd",
-    link: "#",
-    technologies: ["React", "TypeScript", "Prisma", "PostgreSQL"],
-    category: "Full-stack",
-    status: "Live",
-    featured: true,
-  },
-];
+interface Project {
+  _id: string;
+  name: string;
+  imageUrl: string;
+  link: string;
+  status: string;
+  description: string;
+  technologies: string[];
+  category: string;
+  featured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function ProjectsGrid() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/projects");
+      const data = await response.json();
+      
+      if (response.ok) {
+        setProjects(data.projects || []);
+      } else {
+        setError(data.message || "Failed to fetch projects");
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setError("Failed to fetch projects");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-color)]"></div>
+          <p className="mt-4 text-[var(--text-secondary)]">Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-12">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative max-w-md mx-auto">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+          <button
+            onClick={fetchProjects}
+            className="mt-4 bg-[var(--accent-color)] text-white px-4 py-2 rounded-lg font-medium hover:bg-[var(--accent-color)]/90 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-12">
+          <div className="bg-[var(--secondary-color)]/50 backdrop-blur-sm rounded-2xl p-8 border border-[var(--accent-color)]/10 max-w-md mx-auto">
+            <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+              No Projects Yet
+            </h3>
+            <p className="text-[var(--text-secondary)] mb-6">
+              Projects will appear here once they're added to the portfolio.
+            </p>
+            <div className="w-16 h-16 bg-[var(--accent-color)]/10 rounded-full flex items-center justify-center mx-auto">
+              <svg className="w-8 h-8 text-[var(--accent-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const featuredProjects = projects.filter(project => project.featured);
+  const regularProjects = projects.filter(project => !project.featured);
+
   return (
     <div className="space-y-8">
       {/* Featured Projects */}
-      <section>
-        <h2 className="text-3xl font-bold mb-6 text-[var(--accent-color)]">
-          Featured Projects
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects
-            .filter((project) => project.featured)
-            .map((project, index) => (
+      {featuredProjects.length > 0 && (
+        <section>
+          <h2 className="text-3xl font-bold mb-6 text-[var(--accent-color)]">
+            Featured Projects
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProjects.map((project) => (
               <ProjectCard
-                key={`featured-${index}`}
-                title={project.title}
+                key={project._id}
+                title={project.name}
                 description={project.description}
-                image={project.image}
+                image={project.imageUrl}
                 link={project.link}
                 technologies={project.technologies}
                 category={project.category}
@@ -64,23 +123,23 @@ export default function ProjectsGrid() {
                 size="large"
               />
             ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* Regular Projects */}
-      <section>
-        <h2 className="text-3xl font-bold mb-6 text-[var(--accent-color)]">
-          Other Projects
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects
-            .filter((project) => !project.featured)
-            .map((project, index) => (
+      {regularProjects.length > 0 && (
+        <section>
+          <h2 className="text-3xl font-bold mb-6 text-[var(--accent-color)]">
+            {featuredProjects.length > 0 ? "Other Projects" : "My Projects"}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {regularProjects.map((project) => (
               <ProjectCard
-                key={`regular-${index}`}
-                title={project.title}
+                key={project._id}
+                title={project.name}
                 description={project.description}
-                image={project.image}
+                image={project.imageUrl}
                 link={project.link}
                 technologies={project.technologies}
                 category={project.category}
@@ -89,8 +148,9 @@ export default function ProjectsGrid() {
                 size="small"
               />
             ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -1,11 +1,21 @@
 "use client";
 
-import { Hamburger, MenuIcon, MoonIcon, SunIcon, X } from "lucide-react";
+import {
+  Hamburger,
+  LogIn,
+  LogOut,
+  MenuIcon,
+  MoonIcon,
+  SunIcon,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function Navbar() {
+  const { data: session } = useSession();
   const [isDark, setIsDark] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -65,6 +75,7 @@ export default function Navbar() {
               {isDark ? <SunIcon /> : <MoonIcon />}
             </div>
           </button>
+
           <Link className="button_primary hidden sm:flex" href="/contact">
             Hire Me
           </Link>
