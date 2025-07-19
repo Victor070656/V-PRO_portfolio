@@ -311,7 +311,7 @@ function Education() {
           <TimelineIcon icon={<Award className="w-5 h-5" />} />
           <div className="bg-[var(--secondary-color)]/30 backdrop-blur-sm rounded-xl p-6 border border-[var(--accent-color)]/20 hover:border-[var(--primary-color)]/30 transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
             <h3 className="font-bold text-[var(--text-primary)] text-lg">
-              National Diploma in Software Engineering
+              Software Engineering
             </h3>
             <p className="text-[var(--primary-color)] font-medium">
               MOCTECH Imo State

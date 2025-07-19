@@ -93,7 +93,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="relative" style={{ zIndex: 10000 }}>
           <nav
-            style={{ zIndex: 10000 }}
+            style={{ zIndex: 300000 }}
             className="absolute top-0 w-full transition-all block md:hidden text-center gap-8"
           >
             <Link
