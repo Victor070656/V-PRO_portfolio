@@ -91,7 +91,7 @@ export default function Navbar() {
       </header>
 
       {isOpen && (
-        <div className="relative">
+        <div className="relative" style={{ zIndex: 1000 }}>
           <nav className="absolute top-0 w-full transition-all block md:hidden text-center gap-8">
             <Link
               className="text-slate-300 font-semibold block p-3 bg-slate-800 border-b border-slate-400 hover:text-white text-sm"
