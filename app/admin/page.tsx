@@ -1,11 +1,12 @@
 import Header from "@/components/admin/Header";
 import StatCard from "@/components/admin/StatCard";
 import RecentProjects from "@/components/admin/RecentProjects";
-import { FolderKanban, Eye, TrendingUp, Clock } from "lucide-react";
+import Link from "next/link";
+import { Users, BookOpen, DollarSign, CreditCard, Shield, FolderKanban } from "lucide-react";
+import {  Eye, TrendingUp, Clock } from "lucide-react";
 // import { authOptions } from "../api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 
 export default async function AdminDashboardPage() {

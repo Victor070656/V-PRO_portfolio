@@ -15,6 +15,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
+        userType: { label: "User Type", type: "text" } // Hidden field for role distinction
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials.password) {
@@ -23,15 +24,27 @@ export const authOptions: NextAuthOptions = {
 
         const client = await clientPromise;
         const db = client.db();
+
+        // Check which collection to query based on user type
+        const userType = credentials.userType as string;
+        const collection = userType === "admin" ? "users" : "students";
+
         const user = await db
-          .collection("users")
+          .collection(collection)
           .findOne({ username: credentials.username });
 
-        if (user && user.password === credentials.password) {
+        // In production, use proper password hashing
+        // const passwordsMatch = await bcrypt.compare(credentials.password, user.password);
+        const passwordsMatch = user && user.password === credentials.password;
+
+        if (passwordsMatch) {
           // Return a user object that NextAuth can use
           return {
             id: user._id.toString(),
             username: user.username,
+            email: user.email,
+            role: userType === "admin" ? "admin" : "student",
+            name: user.profile?.firstName || user.username,
           };
         }
 
@@ -49,17 +62,23 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // When a user signs in, add their ID and username to the token
+        // When a user signs in, add their ID, username, and role to the token
         token.id = user.id;
         token.username = (user as any).username;
+        token.role = (user as any).role;
+        token.email = (user as any).email;
+        token.name = (user as any).name;
       }
       return token;
     },
     async session({ session, token }) {
-      // Add the user's ID and username to the session object
+      // Add the user's ID, username, and role to the session object
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).username = token.username;
+        (session.user as any).role = token.role;
+        (session.user as any).email = token.email;
+        (session.user as any).name = token.name;
       }
       return session;
     },
@@ -67,7 +86,7 @@ export const authOptions: NextAuthOptions = {
 
   // Specify a custom sign-in page
   pages: {
-    signIn: "/signin",
+    signIn: "/auth/signin",
   },
 
   // Your secret for signing the JWT

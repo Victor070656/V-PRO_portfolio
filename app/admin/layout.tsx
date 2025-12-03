@@ -1,5 +1,7 @@
-import Sidebar from "@/components/admin/Sidebar";
+// app/admin/layout.tsx
 import type { Metadata } from "next";
+import Sidebar from "@/components/admin/Sidebar";
+import AdminAuthGuard from "./AdminAuthGuard";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | V-PRO",
@@ -13,7 +15,9 @@ export default function AdminLayout({
 }) {
   return (
     <div className="bg-[var(--secondary-color)] text-[var(--text-primary)] min-h-screen flex">
-      <Sidebar />
+      <AdminAuthGuard>
+        <Sidebar />
+      </AdminAuthGuard>
       <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
     </div>
   );

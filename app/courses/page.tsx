@@ -18,8 +18,8 @@ export default function CoursesPage() {
       try {
         const res = await fetch("/api/courses");
         const data = await res.json();
-        setCourses(data);
-        setFilteredCourses(data);
+        setCourses(data.courses || []);
+        setFilteredCourses(data.courses || []);
       } catch (error) {
         console.error("Error fetching courses:", error);
       } finally {

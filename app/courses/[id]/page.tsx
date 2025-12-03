@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import BuyButton from "@/components/BuyButton";
 import Link from "next/link";
+import { formatPrice, formatPriceRange } from "@/lib/utils/currency";
 import {
   Clock,
   Users,
@@ -29,6 +30,7 @@ import {
 
 export default function CoursePage() {
   const [course, setCourse] = useState<Course | null>(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     "overview" | "curriculum" | "reviews"
@@ -42,7 +44,8 @@ export default function CoursePage() {
         try {
           const res = await fetch(`/api/courses/${id}`);
           const data = await res.json();
-          setCourse(data);
+          setCourse(data.course);
+          setIsEnrolled(data.isEnrolled || false);
         } catch (error) {
           console.error("Error fetching course:", error);
         } finally {
@@ -135,10 +138,10 @@ export default function CoursePage() {
             <div className="flex flex-wrap gap-4 animate-slide-up animation-delay-300">
               <div className="flex items-center gap-4">
                 <div className="text-3xl font-black">
-                  ${course.price}
+                  {formatPrice(course.price)}
                   {course.originalPrice && (
                     <span className="text-lg line-through text-white/60 ml-2">
-                      ${course.originalPrice}
+                      {formatPrice(course.originalPrice)}
                     </span>
                   )}
                 </div>
@@ -289,12 +292,12 @@ export default function CoursePage() {
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-6">
                   <div className="mb-6">
                     <div className="text-4xl font-black text-slate-900 dark:text-white mb-2">
-                      ${course.price}
+                      {formatPrice(course.price)}
                     </div>
                     {course.originalPrice && (
                       <div className="flex items-center gap-2">
                         <span className="text-lg line-through text-slate-400">
-                          ${course.originalPrice}
+                          {formatPrice(course.originalPrice)}
                         </span>
                         <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-semibold">
                           Save{" "}
@@ -309,7 +312,7 @@ export default function CoursePage() {
                     )}
                   </div>
 
-                  <BuyButton course={course} />
+                  <BuyButton course={course} isEnrolled={isEnrolled} />
 
                   <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
                     <div className="flex items-center justify-between text-sm">

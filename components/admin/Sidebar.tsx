@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -9,16 +10,28 @@ import {
   LogOut,
   User,
   Home,
+  BookOpen,
+  Users,
+  CreditCard,
+  FileText,
+  GraduationCap,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const sidebarItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Courses", href: "/admin/courses", icon: BookOpen },
+  { name: "Students", href: "/admin/students", icon: Users },
+  { name: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },
+  { name: "Payments", href: "/admin/payments", icon: CreditCard },
+  { name: "Progress", href: "/admin/progress", icon: FileText },
   { name: "Projects", href: "/admin/projects", icon: FolderKanban },
+  { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <aside className="hidden md:flex flex-col w-64 admin-sidebar">
@@ -70,24 +83,30 @@ export default function Sidebar() {
       </div>
 
       {/* User Section */}
-      <div className="px-4 py-4 border-t border-[var(--border-color)]">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--secondary-color)] mb-3">
-          <div className="w-8 h-8 bg-[var(--accent-color)] rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
+      {session && (
+        <div className="px-4 py-4 border-t border-[var(--border-color)]">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--secondary-color)] mb-3">
+            <div className="w-8 h-8 bg-[var(--accent-color)] rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm text-[var(--text-primary)] truncate">
+                {session.user?.name || session.user?.email?.split("@")[0] || "Admin User"}
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                {session.user?.role === "admin" ? "Administrator" : "User"}
+              </p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm text-[var(--text-primary)] truncate">Victor Ikechukwu</p>
-            <p className="text-xs text-[var(--text-secondary)]">Administrator</p>
-          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:bg-red-50 hover:text-red-600 transition-colors text-sm"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="font-medium">Sign Out</span>
+          </button>
         </div>
-        <button
-          onClick={() => signOut()}
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:bg-red-50 hover:text-red-600 transition-colors text-sm"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="font-medium">Sign Out</span>
-        </button>
-      </div>
+      )}
     </aside>
   );
 }
