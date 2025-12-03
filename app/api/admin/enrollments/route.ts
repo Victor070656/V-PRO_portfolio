@@ -14,8 +14,8 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db();
 
-    // Fetch all payments with student and course details
-    const payments = await db.collection("payments")
+    // Fetch all enrollments with student and course details
+    const enrollments = await db.collection("enrollments")
       .aggregate([
         {
           $lookup: {
@@ -34,19 +34,14 @@ export async function GET() {
           }
         },
         {
-          $unwind: { path: "$student", preserveNullAndEmptyArrays: true }
+          $unwind: "$student"
         },
         {
-          $unwind: { path: "$course", preserveNullAndEmptyArrays: true }
+          $unwind: "$course"
         },
         {
           $project: {
             _id: 1,
-            paymentId: 1,
-            amount: 1,
-            status: 1,
-            paymentMethod: 1,
-            createdAt: 1,
             studentName: {
               $concat: [
                 { $ifNull: ["$student.profile.firstName", ""] },
@@ -55,22 +50,26 @@ export async function GET() {
               ]
             },
             studentEmail: "$student.email",
-            courseTitle: "$course.title"
+            courseTitle: "$course.title",
+            progress: 1,
+            enrolledAt: 1,
+            lastAccessedAt: 1,
+            completedLessons: { $size: { $ifNull: ["$completedLessons", []] } }
           }
         },
         {
-          $sort: { createdAt: -1 }
+          $sort: { enrolledAt: -1 }
         }
       ])
       .toArray();
 
     return NextResponse.json({
       success: true,
-      payments
+      enrollments
     });
 
   } catch (error) {
-    console.error("Error fetching payments:", error);
+    console.error("Error fetching enrollments:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

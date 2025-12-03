@@ -142,7 +142,9 @@ export default function PaymentModal({ isOpen, onClose, course, onSuccess }: Pay
           </h3>
 
           <div className="space-y-3">
-            {paymentMethods.map((method) => (
+            {paymentMethods.map((method) => {
+              const Icon = method.icon;
+              return (
               <button
                 key={method.id}
                 onClick={() => setSelectedMethod(method.id as any)}
@@ -158,7 +160,7 @@ export default function PaymentModal({ isOpen, onClose, course, onSuccess }: Pay
                       ? 'bg-white/20'
                       : 'bg-slate-100 dark:bg-slate-700'
                   }`}>
-                    <method.icon className="w-5 h-5" />
+                    <Icon className="w-5 h-5" />
                   </div>
                   <div className="text-left">
                     <div className="font-semibold">
@@ -170,7 +172,8 @@ export default function PaymentModal({ isOpen, onClose, course, onSuccess }: Pay
                   </div>
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
 
           <button

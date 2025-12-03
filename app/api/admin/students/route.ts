@@ -1,85 +1,60 @@
-import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
-import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
+
     if (!session || (session.user as any).role !== "admin") {
-      return NextResponse.json({ error: "Access denied" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const client = await clientPromise;
     const db = client.db();
 
-    // Fetch students with their enrollments
-    const [studentsData, enrollmentsData] = await Promise.all([
-      db.collection("users").find({ role: "student" }).toArray(),
-      db.collection("enrollments").find({}).toArray(),
-    ]);
+    // Fetch all students with their enrollment and progress data
+    const students = await db.collection("students").find({}).toArray();
 
-    // Fetch course details for enrollments
-    const courseIds = [
-      ...new Set(enrollmentsData.map((e: any) => e.courseId.toString())),
-    ];
-    const coursesData =
-      courseIds.length > 0
-        ? await db
-            .collection("courses")
-            .find({ _id: { $in: courseIds } })
-            .toArray()
-        : [];
+    // For each student, get enrollment count and progress
+    const studentsWithStats = await Promise.all(
+      students.map(async (student) => {
+        const enrollmentCount = await db.collection("enrollments").countDocuments({
+          userId: student._id
+        });
 
-    const coursesMap = coursesData.reduce((acc: any, course) => {
-      acc[course._id.toString()] = course;
-      return acc;
-    }, {});
+        const enrollments = await db.collection("enrollments").find({
+          userId: student._id
+        }).toArray();
 
-    // Combine student data with enrollment and course info
-    const enrichedStudents = studentsData.map((student: any) => {
-      const studentEnrollments = enrollmentsData.filter(
-        (e: any) => e.userId.toString() === student._id.toString()
-      );
+        const totalProgress = enrollments.reduce((sum, e) => sum + (e.progress || 0), 0);
+        const avgProgress = enrollments.length > 0 ? totalProgress / enrollments.length : 0;
 
-      const enrichedEnrollments = studentEnrollments.map((enrollment: any) => ({
-        ...enrollment,
-        courseId: coursesMap[enrollment.courseId.toString()] || {
-          title: "Unknown Course",
-        },
-      }));
-
-      const totalSpent = enrichedEnrollments.reduce(
-        (total, enrollment) => total + (enrollment.courseId as any).price,
-        0
-      );
-
-      const completedCourses = enrichedEnrollments.filter(
-        (e: any) => e.completedAt
-      ).length;
-      const totalCourses = enrichedEnrollments.length;
-      const completionRate =
-        totalCourses > 0
-          ? Math.round((completedCourses / totalCourses) * 100)
-          : 0;
-
-      return {
-        ...student,
-        enrollments: enrichedEnrollments,
-        totalSpent,
-        totalCourses,
-        completionRate,
-      };
-    });
+        return {
+          _id: student._id.toString(),
+          username: student.username,
+          email: student.email,
+          name: `${student.profile?.firstName || ''} ${student.profile?.lastName || ''}`.trim() || student.username,
+          enrollmentCount,
+          avgProgress: Math.round(avgProgress),
+          createdAt: student.createdAt,
+          lastAccessedAt: enrollments.length > 0 
+            ? enrollments.sort((a, b) => new Date(b.lastAccessedAt).getTime() - new Date(a.lastAccessedAt).getTime())[0].lastAccessedAt
+            : student.createdAt
+        };
+      })
+    );
 
     return NextResponse.json({
-      students: enrichedStudents,
-      enrollments: enrollmentsData,
+      success: true,
+      students: studentsWithStats
     });
+
   } catch (error) {
     console.error("Error fetching students:", error);
     return NextResponse.json(
-      { error: "Failed to fetch students" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

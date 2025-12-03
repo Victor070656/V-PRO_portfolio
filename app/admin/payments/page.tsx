@@ -1,571 +1,229 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, DollarSign, TrendingUp, Users, Clock, CreditCard, Shield, CheckCircle, XCircle, Eye, ArrowUpDown } from "lucide-react";
-import Header from "@/components/admin/Header";
+import { CreditCard, Search, DollarSign, CheckCircle, XCircle, Clock, TrendingUp } from "lucide-react";
+import { formatPrice } from "@/lib/utils/currency";
 
 interface Payment {
   _id: string;
-  userId: string;
-  courseId: string;
+  paymentId: string;
   amount: number;
-  currency: string;
-  status: 'pending' | 'successful' | 'failed' | 'refunded';
+  status: string;
   paymentMethod: string;
-  txRef: string;
-  flwRef?: string;
+  studentName: string;
+  studentEmail: string;
+  courseTitle: string;
   createdAt: string;
-  updatedAt: string;
-  completedAt?: string;
-  user?: {
-    name?: string;
-    email?: string;
-  username?: string;
-  };
-  course?: {
-    title: string;
-    category: string;
-    level: string;
-    price: number;
-    thumbnail?: string;
-  };
 }
 
-export default function PaymentsManagementPage() {
+export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterMethod, setFilterMethod] = useState("");
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
-  // Fetch payments data
   useEffect(() => {
     fetchPayments();
   }, []);
 
   const fetchPayments = async () => {
     try {
-      const response = await fetch("/api/admin/payments");
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          setError("Access denied");
-        } else {
-          setError("Failed to fetch payments");
-        }
-        return;
+      const res = await fetch("/api/admin/payments");
+      if (res.ok) {
+        const data = await res.json();
+        setPayments(data.payments || []);
       }
-
-      const paymentsData = await response.json();
-
-      setPayments(paymentsData);
-      setFilteredPayments(paymentsData);
-      setIsLoading(false);
-    } catch (err) {
-      console.error("Error fetching payments:", err);
-      setError("Failed to fetch payments");
-      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch payments:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Filter payments based on search and filters
-  useEffect(() => {
-    let filtered = payments;
+  const filteredPayments = payments.filter(payment =>
+    payment.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    payment.studentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    payment.courseTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    payment.paymentId?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(payment =>
-        payment.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.course?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.txRef?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Status filter
-    if (filterStatus) {
-      filtered = filtered.filter(payment => payment.status === filterStatus);
-    }
-
-    // Payment method filter
-    if (filterMethod) {
-      filtered = filtered.filter(payment => payment.paymentMethod.toLowerCase().includes(filterMethod.toLowerCase()));
-    }
-
-    // Sort
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "createdAt":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case "amount":
-          return b.amount - a.amount;
-        case "status":
-          return a.status.localeCompare(b.status);
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredPayments(filtered);
-  }, [payments, searchTerm, filterStatus, filterMethod, sortBy]);
-
-  const paymentMethods = [
-    "card",
-    "mobile_money",
-    "bank_transfer",
-    "ussd",
-    "qr",
-    "barcode"
-  ];
-
-  const paymentStatuses = [
-    "pending",
-    "successful",
-    "failed",
-    "refunded"
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "successful":
-        return "text-green-600 dark:text-green-400";
-      case "pending":
-        return "text-yellow-600 dark:text-yellow-400";
-      case "failed":
-        return "text-red-600 dark:text-red-400";
-      case "refunded":
-        return "text-blue-600 dark:text-blue-400";
-      default:
-        return "text-gray-600 dark:text-gray-400";
-    }
-  };
+  const totalRevenue = payments.filter(p => p.status === 'successful').reduce((sum, p) => sum + p.amount, 0);
+  const successfulPayments = payments.filter(p => p.status === 'successful').length;
+  const pendingPayments = payments.filter(p => p.status === 'pending').length;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "successful":
-        return CheckCircle;
-      case "pending":
-        return Clock;
-      case "failed":
-        return XCircle;
-      case "refunded":
-        return DollarSign;
+      case 'successful':
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case 'failed':
+        return <XCircle className="w-5 h-5 text-red-600" />;
       default:
-        return Shield;
+        return <Clock className="w-5 h-5 text-yellow-600" />;
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+  const getStatusBadge = (status: string) => {
+    const styles = {
+      successful: 'bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800',
+      failed: 'bg-gradient-to-r from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800',
+      pending: 'bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800'
+    };
+    return styles[status as keyof typeof styles] || styles.pending;
+  };
 
   return (
-    <div className="min-h-screen bg-[var(--background-color)]">
-      <Header />
-
-      <main className="p-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-[var(--text-primary)]">Payment Management</h1>
-            <div className="flex gap-4">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-                  <div className="flex items-center">
-                    <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                      <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">Total Revenue</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        ₦{payments
-                          .filter(p => p.status === 'successful')
-                          .reduce((sum, p) => sum + p.amount, 0)
-                          .toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-                  <div className="flex items-center">
-                    <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                      <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">This Month</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        ₦{payments
-                          .filter(p => p.status === 'successful' && new Date(p.createdAt).getMonth() === new Date().getMonth())
-                          .reduce((sum, p) => sum + p.amount, 0)
-                          .toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-                  <div className="flex items-center">
-                    <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                      <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">Active Students</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {[...new Set(payments
-                          .filter(p => p.status === 'successful')
-                          .map((p: any) => p.userId.toString())
-                        )].size
-                        } students
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-                  <div className="flex items-center">
-                    <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                      <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">Pending</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {payments.filter(p => p.status === 'pending').length} transactions
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search and Filters */}
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
-                <div className="flex flex-col lg:flex-row gap-4">
-                  {/* Search */}
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search payments..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Filters */}
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Status Filter */}
-                    <div className="relative">
-                      <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="appearance-none pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">All Statuses</option>
-                        {paymentStatuses.map(status => (
-                          <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Method Filter */}
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <select
-                        value={filterMethod}
-                        onChange={(e) => setFilterMethod(e.target.value)}
-                        className="appearance-none pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">All Methods</option>
-                        {paymentMethods.map(method => (
-                          <option key={method} value={method}>{method.replace('_', ' ').toUpperCase()}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Sort */}
-                    <div className="relative">
-                      <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="appearance-none pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="createdAt">Date</option>
-                        <option value="amount">Amount</option>
-                        <option value="status">Status</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 p-4 rounded-lg mb-6">
-                  {error}
-                </div>
-              )}
-
-              {/* Payments Table */}
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-gray-900">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Transaction
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Student
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Course
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Method
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Date
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {filteredPayments.map((payment) => (
-                        <tr key={payment._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {payment.txRef}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              FLW Ref
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {payment.user?.name || payment.user?.username}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {payment.user?.email}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {payment.course?.title}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {payment.course?.category} • {payment.course?.level}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <span className={`font-bold ${getStatusColor(payment.status)}`}>
-                                ₦{payment.amount.toLocaleString()}
-                              </span>
-                              <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
-                                payment.status === 'successful'
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                  : payment.status === 'pending'
-                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                              }`}>
-                                {payment.status}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(payment.status)}`}>
-                              {payment.paymentMethod.replace('_', ' ').toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1">
-                              {getStatusIcon(payment.status)}
-                              <span className="text-sm text-gray-600 dark:text-gray-400">
-                                {new Date(payment.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => setSelectedPayment(payment)}
-                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                              >
-                                <Eye className="w-4 h-4 inline-block" />
-                              </button>
-
-                              {payment.status === 'pending' && (
-                                <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-medium">
-                                  Cancel
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Empty State */}
-              {filteredPayments.length === 0 && !isLoading && (
-                <div className="text-center py-12">
-                  <div className="text-gray-500 dark:text-gray-400">
-                    No payments found matching your filters.
-                  </div>
-                </div>
-              )}
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Gradient Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 rounded-3xl p-8 shadow-2xl">
+        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+              <CreditCard className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-black text-white">Payments</h1>
+              <p className="text-white/80 text-lg mt-1">
+                View and manage all payment transactions
+              </p>
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Payment Details Modal */}
-      {selectedPayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-start p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Payment Details</h2>
-              <button
-                onClick={() => setSelectedPayment(null)}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-              >
-                <X className="w-6 h-6" />
-              </button>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <DollarSign className="w-6 h-6 text-white" />
             </div>
+            <div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Revenue</p>
+              <h3 className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{formatPrice(totalRevenue)}</h3>
+            </div>
+          </div>
+        </div>
 
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Transaction Information</h3>
+        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <CheckCircle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Successful</p>
+              <h3 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{successfulPayments}</h3>
+            </div>
+          </div>
+        </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Transaction ID</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.txRef}</div>
-                    </div>
+        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Clock className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Pending</p>
+              <h3 className="text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">{pendingPayments}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Flutterwave Reference</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.flwRef || 'N/A'}</div>
-                    </div>
+      {/* Search */}
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search payments by student, course, or payment ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-slate-900 dark:text-white"
+          />
+        </div>
+      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
-                      <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                        ₦{selectedPayment.amount.toLocaleString()}
+      {/* Payments Table */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            <p className="mt-4">Loading payments...</p>
+          </div>
+        ) : filteredPayments.length === 0 ? (
+          <div className="p-12 text-center">
+            <CreditCard className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+            <p className="text-slate-500 dark:text-slate-400">
+              {searchTerm ? "No payments found matching your search" : "No payments yet"}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b border-slate-200 dark:border-slate-700">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Payment ID
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Student
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Course
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                {filteredPayments.map((payment) => (
+                  <tr key={payment._id} className="hover:bg-gradient-to-r hover:from-green-50/50 hover:to-emerald-50/50 dark:hover:from-green-900/10 dark:hover:to-emerald-900/10 transition-all duration-200">
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-sm text-slate-600 dark:text-slate-400">
+                        {payment.paymentId?.substring(0, 12)}...
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="font-medium text-slate-900 dark:text-white">{payment.studentName || 'Unknown'}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{payment.studentEmail}</p>
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Method</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.paymentMethod.replace('_', ' ').toUpperCase()}</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-slate-900 dark:text-white">{payment.courseTitle}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-lg bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                        {formatPrice(payment.amount)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(selectedPayment.status)}`}>
-                          {getStatusIcon(selectedPayment.status)}
-                          <span className="ml-2">{selectedPayment.status.charAt(0).toUpperCase() + selectedPayment.status.slice(1)}</span>
+                        {getStatusIcon(payment.status)}
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(payment.status)}`}>
+                          {payment.status?.charAt(0).toUpperCase() + payment.status?.slice(1)}
                         </span>
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Created</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{new Date(selectedPayment.createdAt).toLocaleDateString()}</div>
-                    </div>
-
-                    {selectedPayment.completedAt && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Completed</label>
-                        <div className="text-sm text-gray-900 dark:text-white">{new Date(selectedPayment.completedAt).toLocaleDateString()}</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Student Information</h3>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.user?.name || selectedPayment.user?.username}</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.user?.email}</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.user?.username}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Course Information</h3>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course Title</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.course?.title}</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.course?.category}</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Level</label>
-                      <div className="text-sm text-gray-900 dark:text-white">{selectedPayment.course?.level}</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price</label>
-                      <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                        ₦{selectedPayment.course?.price?.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
+                        {new Date(payment.createdAt).toLocaleDateString()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

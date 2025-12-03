@@ -1,64 +1,58 @@
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import clientPromise from "@/lib/mongodb";
-import { NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-
-    // Debug logging
-    console.log("Session:", session);
-    console.log("User role:", session?.user);
-
-    if (!session) {
-      return NextResponse.json({ error: "No session found" }, { status: 401 });
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Temporarily disable admin check for debugging
-    const userRole = (session.user as any).role;
-    console.log("User role found:", userRole);
-    console.log("Temporarily allowing all authenticated users");
+    const client = await clientPromise;
+    const db = client.db();
+    const courses = await db.collection("courses").find({}).sort({ createdAt: -1 }).toArray();
 
-    const formData = await request.json();
+    return NextResponse.json({ courses });
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
 
-    // Validate required fields
-    const requiredFields = ["title", "description", "category", "level", "duration", "price"];
-    for (const field of requiredFields) {
-      if (!formData[field]) {
-        return NextResponse.json(
-          { error: `Missing required field: ${field}` },
-          { status: 400 }
-        );
-      }
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const data = await req.json();
+    
+    // Basic validation
+    if (!data.title || !data.description) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const client = await clientPromise;
     const db = client.db();
 
-    // Create course in database
-    const result = await db.collection("courses").insertOne({
-      ...formData,
+    const newCourse = {
+      ...data,
       createdAt: new Date(),
       updatedAt: new Date(),
       students: 0,
       rating: 0,
       reviews: 0,
-    });
+      isPublished: false, // Default to draft
+    };
 
-    if (result.insertedId) {
-      return NextResponse.json(
-        { success: true, courseId: result.insertedId.toString() },
-        { status: 201 }
-      );
-    } else {
-      throw new Error("Failed to create course");
-    }
+    const result = await db.collection("courses").insertOne(newCourse);
+
+    return NextResponse.json({ success: true, courseId: result.insertedId }, { status: 201 });
   } catch (error) {
     console.error("Error creating course:", error);
-    return NextResponse.json(
-      { error: "Failed to create course" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
