@@ -80,18 +80,44 @@ export async function POST(
 
     // Also update enrollment progress if completed
     if (completed) {
-      // Logic to calculate overall course progress would go here
-      // For now, we just ensure the lesson is marked as completed in enrollment
-      await db.collection("enrollments").updateOne(
-        {
-          userId: new ObjectId(session.user.id),
-          courseId: new ObjectId(courseId),
-        },
-        {
-          $addToSet: { completedLessons: new ObjectId(lessonId) },
-          $set: { lastAccessedAt: new Date() }
+      // Get the course to find total lessons
+      const course = await db.collection("courses").findOne({
+        _id: new ObjectId(courseId)
+      });
+
+      if (course) {
+        const totalLessons = course.lessons?.length || 0;
+        
+        // Update enrollment with completed lesson
+        const enrollmentUpdate = await db.collection("enrollments").findOneAndUpdate(
+          {
+            userId: new ObjectId(session.user.id),
+            courseId: new ObjectId(courseId),
+          },
+          {
+            $addToSet: { completedLessons: new ObjectId(lessonId) },
+            $set: { lastAccessedAt: new Date() }
+          },
+          { returnDocument: 'after' }
+        );
+
+        // Calculate progress percentage
+        if (enrollmentUpdate && totalLessons > 0) {
+          const completedCount = enrollmentUpdate.completedLessons?.length || 0;
+          const progressPercentage = Math.round((completedCount / totalLessons) * 100);
+          
+          // Update the progress field
+          await db.collection("enrollments").updateOne(
+            {
+              userId: new ObjectId(session.user.id),
+              courseId: new ObjectId(courseId),
+            },
+            {
+              $set: { progress: progressPercentage }
+            }
+          );
         }
-      );
+      }
     }
 
     return NextResponse.json({ success: true });
