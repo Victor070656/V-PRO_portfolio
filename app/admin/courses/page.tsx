@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Search, BookOpen, Eye, DollarSign, Calendar } from "lucide-react";
+import { Plus, Edit, Trash2, Search, BookOpen, Eye, DollarSign, Calendar, Loader2 } from "lucide-react";
 
 interface Course {
   _id: string;
   title: string;
   description: string;
   price: number;
-  status: "draft" | "published";
+  isPublished: boolean;
   createdAt: string;
   thumbnail?: string;
 }
@@ -18,6 +18,7 @@ export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCourses();
@@ -55,8 +56,9 @@ export default function AdminCoursesPage() {
     }
   };
 
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    setTogglingId(id);
     
     try {
       const res = await fetch(`/api/admin/courses/${id}`, {
@@ -64,12 +66,12 @@ export default function AdminCoursesPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ isPublished: newStatus }),
       });
       
       if (res.ok) {
         setCourses(courses.map(c => 
-          c._id === id ? { ...c, status: newStatus as "draft" | "published" } : c
+          c._id === id ? { ...c, isPublished: newStatus } : c
         ));
       } else {
         alert("Failed to update course status");
@@ -77,16 +79,17 @@ export default function AdminCoursesPage() {
     } catch (error) {
       console.error("Error updating course status:", error);
       alert("Error updating course status");
+    } finally {
+      setTogglingId(null);
     }
   };
-
 
   const filteredCourses = courses.filter(course => 
     course?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const publishedCount = courses.filter(c => c.status === 'published').length;
-  const draftCount = courses.filter(c => c.status === 'draft').length;
+  const publishedCount = courses.filter(c => c.isPublished).length;
+  const draftCount = courses.filter(c => !c.isPublished).length;
   const totalRevenue = courses.reduce((sum, c) => sum + (c.price || 0), 0);
 
   return (
@@ -221,23 +224,28 @@ export default function AdminCoursesPage() {
                     {course.title}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium ${course.status === 'published' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
-                      {course.status === 'published' ? 'Published' : 'Draft'}
+                    <span className={`text-xs font-medium ${course.isPublished ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+                      {course.isPublished ? 'Published' : 'Draft'}
                     </span>
                     <button
-                      onClick={() => handleToggleStatus(course._id, course.status)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                        course.status === 'published'
+                      onClick={() => handleToggleStatus(course._id, course.isPublished)}
+                      disabled={togglingId === course._id}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+                        course.isPublished
                           ? 'bg-green-500'
                           : 'bg-slate-300 dark:bg-slate-600'
-                      }`}
-                      title={`Toggle to ${course.status === 'published' ? 'draft' : 'publish'}`}
+                      } ${togglingId === course._id ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}`}
+                      title={togglingId === course._id ? 'Updating...' : `Toggle to ${course.isPublished ? 'draft' : 'publish'}`}
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          course.status === 'published' ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
+                      {togglingId === course._id ? (
+                        <Loader2 className="w-4 h-4 text-white animate-spin mx-auto" />
+                      ) : (
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                            course.isPublished ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -260,20 +268,30 @@ export default function AdminCoursesPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
-                  <Link
-                    href={`/admin/courses/${course._id}/edit`}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-xl transition-all duration-200 font-medium"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Edit
-                  </Link>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/admin/courses/${course._id}/lessons`}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all duration-200 font-medium"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Lessons
+                    </Link>
+                    <Link
+                      href={`/admin/courses/${course._id}/edit`}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-xl transition-all duration-200 font-medium"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit
+                    </Link>
+                  </div>
                   <button
                     onClick={() => handleDelete(course._id)}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-200"
+                    className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
                     title="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
+                    Delete
                   </button>
                 </div>
               </div>

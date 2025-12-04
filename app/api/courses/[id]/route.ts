@@ -24,24 +24,36 @@ export async function GET(
 
     // Get session to check if user is enrolled (for additional data)
     const session = await getServerSession(authOptions);
-    let isEnrolled = false;
-    let progress = 0;
+    let enrollment = null;
 
     if (session) {
-      const enrollment = await db.collection("enrollments").findOne({
-        userId: new ObjectId((session.user as any).id),
+      const userId = new ObjectId((session.user as any).id);
+      enrollment = await db.collection("enrollments").findOne({
+        userId: userId,
         courseId: new ObjectId(id),
       });
-
-      isEnrolled = !!enrollment;
-      progress = enrollment?.progress || 0;
     }
 
+    // Serialize ObjectIds to strings for lessons
+    const serializedCourse = {
+      ...course,
+      _id: course._id.toString(),
+      lessons: course.lessons?.map((lesson: any) => ({
+        ...lesson,
+        _id: lesson._id?.toString(),
+      })) || [],
+    };
+
     return NextResponse.json({
-      course,
-      isEnrolled,
-      progress,
+      course: serializedCourse,
+      enrollment: enrollment ? {
+        progress: enrollment.progress || 0,
+        completedLessons: enrollment.completedLessons?.map((id: any) => id.toString()) || [],
+        lastAccessedAt: enrollment.lastAccessedAt,
+        certificateIssued: enrollment.certificate?.issued || false,
+      } : null,
     });
+
   } catch (error) {
     console.error("Error fetching course:", error);
     return NextResponse.json(

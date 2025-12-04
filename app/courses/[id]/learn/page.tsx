@@ -5,8 +5,8 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Course, Lesson } from "@/lib/models/course";
 import CourseSidebar from "@/components/course/CourseSidebar";
 import LessonContent from "@/components/course/LessonContent";
-import { Menu, X, Loader2 } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import { Menu, X, Loader2, BookOpen } from "lucide-react";
+import Link from "next/link";
 
 export default function LearnPage() {
   const params = useParams();
@@ -17,47 +17,89 @@ export default function LearnPage() {
 
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
     fetchCourseData();
+    
+    // Timeout fallback
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.error("Loading timeout - forcing error state");
+        setLoading(false);
+        setError("Loading timeout. Please try again.");
+      }
+    }, 10000); // 10 second timeout
+    
+    return () => clearTimeout(timeout);
   }, [courseId]);
 
   useEffect(() => {
-    if (course && course.lessons.length > 0) {
-      if (!lessonId) {
+    console.log("Course state:", { 
+      hasCourse: !!course, 
+      lessonsCount: course?.lessons?.length,
+      lessonId,
+      hasRedirected,
+      currentLesson: !!currentLesson
+    });
+    
+    if (course && course.lessons && course.lessons.length > 0) {
+      if (!lessonId && !hasRedirected) {
         // Redirect to first lesson if no lessonId provided
-        router.replace(`/courses/${courseId}/learn?lessonId=${course.lessons[0]._id}`);
-      } else {
+        const firstLessonId = course.lessons[0]._id?.toString();
+        console.log("Redirecting to first lesson:", firstLessonId);
+        if (firstLessonId) {
+          setHasRedirected(true);
+          router.replace(`/courses/${courseId}/learn?lessonId=${firstLessonId}`);
+        }
+      } else if (lessonId) {
         const lesson = course.lessons.find(l => l._id?.toString() === lessonId);
+        console.log("Found lesson:", !!lesson);
         if (lesson) {
           setCurrentLesson(lesson);
+        } else {
+          console.error("Lesson not found:", lessonId);
+          setError(`Lesson not found: ${lessonId}`);
         }
       }
     }
-  }, [course, lessonId]);
+  }, [course, lessonId, courseId, router, hasRedirected]);
 
   const fetchCourseData = async () => {
     try {
+      console.log("Fetching course:", courseId);
+      
       // Fetch course details
       const courseRes = await fetch(`/api/courses/${courseId}`);
+      console.log("Course response status:", courseRes.status);
+      
+      if (!courseRes.ok) {
+        throw new Error(`Failed to fetch course: ${courseRes.status}`);
+      }
+      
       const courseData = await courseRes.json();
+      console.log("Course data:", courseData);
       
       if (courseData.course) {
         setCourse(courseData.course);
         
-        // Fetch enrollment/progress data
-        // For now, we'll simulate or fetch from a separate endpoint if needed
-        // Assuming the course API might return enrollment status or we fetch it separately
-        // Let's fetch progress for all lessons or just rely on the enrollment object
+        // Use enrollment data from course API response
         if (courseData.enrollment) {
-           setCompletedLessons(courseData.enrollment.completedLessons || []);
+          const completedIds = courseData.enrollment.completedLessons?.map((id: any) => 
+            typeof id === 'string' ? id : id.toString()
+          ) || [];
+          setCompletedLessons(completedIds);
         }
+      } else {
+        setError("Course not found");
       }
     } catch (error) {
       console.error("Error fetching course data:", error);
+      setError(error instanceof Error ? error.message : "Failed to load course");
     } finally {
       setLoading(false);
     }
@@ -110,18 +152,88 @@ export default function LearnPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+          <p className="text-slate-600 dark:text-slate-400">Loading course...</p>
+        </div>
       </div>
     );
   }
 
-  if (!course || !currentLesson) {
+  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Course Not Found</h2>
-          <p className="text-slate-600">Unable to load course content.</p>
+          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Error Loading Course</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">{error}</p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                fetchCourseData();
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300"
+            >
+              Try Again
+            </button>
+            <Link
+              href="/student/courses"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-all duration-300"
+            >
+              Back to Courses
+            </Link>
+          </div>
         </div>
+      </div>
+    );
+  }
+
+
+  if (!course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Course Not Found</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">Unable to load course content.</p>
+          <Link
+            href="/courses"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300"
+          >
+            Browse Courses
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if course has lessons
+  if (!course.lessons || course.lessons.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">No Lessons Available</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            This course doesn't have any lessons yet. Please check back later.
+          </p>
+          <Link
+            href="/student/courses"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300"
+          >
+            Back to My Courses
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentLesson) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
       </div>
     );
   }
@@ -135,7 +247,7 @@ export default function LearnPage() {
     <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
       {/* Mobile Header */}
       <div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between z-20">
-        <h1 className="font-bold truncate mr-4">{course.title}</h1>
+        <h1 className="font-bold truncate mr-4 text-slate-900 dark:text-white">{course.title}</h1>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"

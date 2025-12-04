@@ -6,7 +6,7 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,10 +14,11 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db();
     
-    const course = await db.collection("courses").findOne({ _id: new ObjectId(params.id) });
+    const course = await db.collection("courses").findOne({ _id: new ObjectId(id) });
 
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
@@ -32,7 +33,7 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -40,6 +41,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const data = await req.json();
     delete data._id; // Prevent updating _id
 
@@ -47,7 +49,7 @@ export async function PUT(
     const db = client.db();
 
     const result = await db.collection("courses").updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: { ...data, updatedAt: new Date() } }
     );
 
@@ -64,7 +66,7 @@ export async function PUT(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -72,18 +74,21 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const data = await req.json();
     const client = await clientPromise;
     const db = client.db();
 
-    // Only allow updating specific fields via PATCH (like status)
+    // Only allow updating specific fields via PATCH (like isPublished)
     const updateData: any = {};
-    if (data.status) updateData.status = data.status;
+    if (typeof data.isPublished === 'boolean') {
+      updateData.isPublished = data.isPublished;
+    }
     
     updateData.updatedAt = new Date();
 
     const result = await db.collection("courses").updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updateData }
     );
 
@@ -98,10 +103,9 @@ export async function PATCH(
   }
 }
 
-
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -109,10 +113,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const client = await clientPromise;
     const db = client.db();
 
-    const result = await db.collection("courses").deleteOne({ _id: new ObjectId(params.id) });
+    const result = await db.collection("courses").deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
