@@ -91,11 +91,38 @@ export default function BuyButton({ course, isEnrolled }: BuyButtonProps) {
   if (isEnrolled) {
     return (
       <button
-        onClick={() => router.push(`/courses/${course._id}`)}
+        onClick={() => router.push(`/courses/${course._id}/learn`)}
         className="group w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/50 hover:-translate-y-1 flex items-center justify-center gap-3"
       >
         <CheckCircle2 className="w-6 h-6" />
         <span>Continue Learning</span>
+      </button>
+    );
+  }
+
+  // Guest user - Disabled
+  if (!session) {
+    return (
+      <button
+        disabled
+        className="w-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 py-4 px-6 rounded-2xl font-bold text-lg cursor-not-allowed flex items-center justify-center gap-3"
+      >
+        <ShoppingCart className="w-6 h-6" />
+        <span>Login to Enroll</span>
+      </button>
+    );
+  }
+
+  // Admin user - Disabled
+  // Assuming role is available on session.user, casting to any to avoid TS errors if types aren't updated
+  if ((session.user as any).role === 'admin') {
+    return (
+      <button
+        disabled
+        className="w-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 py-4 px-6 rounded-2xl font-bold text-lg cursor-not-allowed flex items-center justify-center gap-3"
+      >
+        <ShoppingCart className="w-6 h-6" />
+        <span>Admin View</span>
       </button>
     );
   }

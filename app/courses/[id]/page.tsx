@@ -36,6 +36,7 @@ export default function CoursePage() {
     "overview" | "curriculum" | "reviews"
   >("overview");
   const [expandedModule, setExpandedModule] = useState<number | null>(0);
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const { id } = useParams();
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function CoursePage() {
           const res = await fetch(`/api/courses/${id}`);
           const data = await res.json();
           setCourse(data.course);
-          setIsEnrolled(data.isEnrolled || false);
+          setIsEnrolled(!!data.enrollment);
         } catch (error) {
           console.error("Error fetching course:", error);
         } finally {
@@ -63,6 +64,17 @@ export default function CoursePage() {
   if (!course) {
     return <ErrorState />;
   }
+
+  const getEmbedUrl = (url: string) => {
+    if (!url) return "";
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      const videoId = url.includes("v=")
+        ? url.split("v=")[1].split("&")[0]
+        : url.split("/").pop();
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    }
+    return url;
+  };
 
   return (
     <div className="bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 antialiased min-h-screen">
@@ -170,22 +182,36 @@ export default function CoursePage() {
               {/* Course Preview Card */}
               <div className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
                 <div className="relative aspect-video bg-gradient-to-br from-indigo-500 to-purple-600">
-                  {course.thumbnail ? (
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="w-full h-full object-cover"
+                  {isPlayingPreview && course.previewVideoUrl ? (
+                    <iframe
+                      src={getEmbedUrl(course.previewVideoUrl)}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <PlayCircle className="w-24 h-24 text-white/50" />
-                    </div>
+                    <>
+                      {course.thumbnail ? (
+                        <img
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <PlayCircle className="w-24 h-24 text-white/50" />
+                        </div>
+                      )}
+                      {course.previewVideoUrl && (
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center group cursor-pointer hover:bg-black/40 transition-colors"
+                             onClick={() => setIsPlayingPreview(true)}>
+                          <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xl">
+                            <PlayCircle className="w-10 h-10 text-indigo-600" />
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center group cursor-pointer hover:bg-black/40 transition-colors">
-                    <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xl">
-                      <PlayCircle className="w-10 h-10 text-indigo-600" />
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -218,6 +244,7 @@ export default function CoursePage() {
                   {activeTab === "overview" && <OverviewTab course={course} />}
                   {activeTab === "curriculum" && (
                     <CurriculumTab
+                      course={course}
                       expandedModule={expandedModule}
                       setExpandedModule={setExpandedModule}
                     />
@@ -238,26 +265,25 @@ export default function CoursePage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  {[
-                    "Master the fundamentals and advanced concepts",
-                    "Build real-world projects from scratch",
-                    "Best practices and industry standards",
-                    "Problem-solving and critical thinking",
-                    "Work with modern tools and frameworks",
-                    "Career-ready skills and portfolio pieces",
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-                    >
-                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle2 className="w-4 h-4 text-white" />
+                  {course.objectives?.length > 0 ? (
+                    course.objectives.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                      >
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-slate-700 dark:text-slate-300">
+                          {item}
+                        </span>
                       </div>
-                      <span className="text-slate-700 dark:text-slate-300">
-                        {item}
-                      </span>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-slate-500 dark:text-slate-400 col-span-2">
+                      No learning objectives listed.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -267,20 +293,21 @@ export default function CoursePage() {
                   Requirements
                 </h2>
                 <ul className="space-y-3">
-                  {[
-                    "Basic understanding of programming concepts",
-                    "A computer with internet connection",
-                    "Willingness to learn and practice",
-                    "No prior experience required",
-                  ].map((req, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-3 text-slate-600 dark:text-slate-400"
-                    >
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>{req}</span>
-                    </li>
-                  ))}
+                  {course.requirements?.length > 0 ? (
+                    course.requirements.map((req, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-slate-600 dark:text-slate-400"
+                      >
+                        <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <span>{req}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <p className="text-slate-500 dark:text-slate-400">
+                      No requirements listed.
+                    </p>
+                  )}
                 </ul>
               </div>
             </div>
@@ -355,11 +382,11 @@ export default function CoursePage() {
                 </h3>
                 <ul className="space-y-3">
                   {[
-                    { icon: PlayCircle, text: "12 hours video content" },
+                    { icon: PlayCircle, text: `${course.lessons?.length || 0} lessons` },
+                    { icon: Clock, text: course.duration || "Self-paced" },
                     { icon: Download, text: "Downloadable resources" },
                     { icon: Award, text: "Certificate of completion" },
                     { icon: Users, text: "Access to community" },
-                    { icon: Clock, text: "Lifetime access" },
                     { icon: Globe, text: "Access on mobile & desktop" },
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
@@ -378,13 +405,19 @@ export default function CoursePage() {
                   Your Instructor
                 </h3>
                 <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex-shrink-0"></div>
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex-shrink-0 overflow-hidden">
+                    {course.instructor?.image ? (
+                        <img src={course.instructor.image} alt={course.instructor.name} className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full bg-slate-200 dark:bg-slate-700" />
+                    )}
+                  </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white mb-1">
-                      Victor Ikechukwu
+                      {course.instructor?.name || "Victor Ikechukwu"}
                     </h4>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                      Full-Stack Developer
+                      {course.instructor?.bio || "Full-Stack Developer"}
                     </p>
                     <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-1">
@@ -407,7 +440,7 @@ export default function CoursePage() {
   );
 }
 
-// Overview Tab Component
+// OverviewTab Component
 function OverviewTab({ course }: { course: Course }) {
   return (
     <div className="space-y-6">
@@ -420,20 +453,11 @@ function OverviewTab({ course }: { course: Course }) {
         </p>
       </div>
 
-      <div>
-        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-          This comprehensive course is designed to take you from beginner to
-          advanced level. You'll learn through hands-on projects, real-world
-          examples, and practical exercises that will help you master the
-          concepts and apply them in your own work.
-        </p>
-      </div>
-
       <div className="grid md:grid-cols-3 gap-4 pt-6">
         {[
-          { icon: TrendingUp, label: "Skill Level", value: "All Levels" },
-          { icon: Users, label: "Students", value: "1,234" },
-          { icon: Calendar, label: "Last Updated", value: "Dec 2024" },
+          { icon: TrendingUp, label: "Skill Level", value: course.level || "All Levels" },
+          { icon: Users, label: "Students", value: course.students || "0" },
+          { icon: Calendar, label: "Last Updated", value: new Date(course.updatedAt).toLocaleDateString() },
         ].map((stat, i) => (
           <div
             key={i}
@@ -453,53 +477,22 @@ function OverviewTab({ course }: { course: Course }) {
   );
 }
 
-// Curriculum Tab Component
+// CurriculumTab Component
 function CurriculumTab({
+  course,
   expandedModule,
   setExpandedModule,
 }: {
+  course: Course;
   expandedModule: number | null;
   setExpandedModule: (index: number | null) => void;
 }) {
   const modules = [
     {
-      title: "Getting Started",
-      lessons: 5,
-      duration: "45 min",
-      items: [
-        {
-          title: "Introduction to the Course",
-          duration: "5:30",
-          type: "video",
-        },
-        {
-          title: "Setting Up Your Environment",
-          duration: "10:15",
-          type: "video",
-        },
-        { title: "Course Resources", duration: "3:45", type: "reading" },
-        { title: "First Assignment", duration: "15:00", type: "assignment" },
-        { title: "Module Quiz", duration: "10:30", type: "quiz" },
-      ],
-    },
-    {
-      title: "Core Concepts",
-      lessons: 8,
-      duration: "2h 15min",
-      items: [
-        { title: "Fundamentals Overview", duration: "12:30", type: "video" },
-        { title: "Working with Data", duration: "18:45", type: "video" },
-        { title: "Best Practices", duration: "15:20", type: "video" },
-      ],
-    },
-    {
-      title: "Advanced Topics",
-      lessons: 10,
-      duration: "3h 30min",
-      items: [
-        { title: "Advanced Patterns", duration: "20:15", type: "video" },
-        { title: "Performance Optimization", duration: "25:30", type: "video" },
-      ],
+      title: "Course Content",
+      lessons: course.lessons?.length || 0,
+      duration: course.duration || "Variable",
+      items: course.lessons || [],
     },
   ];
 
@@ -510,9 +503,7 @@ function CurriculumTab({
           Course Curriculum
         </h3>
         <p className="text-slate-600 dark:text-slate-400">
-          {modules.length} modules •{" "}
-          {modules.reduce((acc, m) => acc + m.lessons, 0)} lessons • 6h 30min
-          total
+          {course.lessons?.length || 0} lessons
         </p>
       </div>
 
@@ -538,7 +529,7 @@ function CurriculumTab({
                   {module.title}
                 </h4>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {module.lessons} lessons • {module.duration}
+                  {module.lessons} lessons
                 </p>
               </div>
             </div>
@@ -551,27 +542,30 @@ function CurriculumTab({
 
           {expandedModule === index && (
             <div className="border-t border-slate-200 dark:border-slate-700">
-              {module.items.map((item, itemIndex) => (
-                <div
-                  key={itemIndex}
-                  className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-b-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <PlayCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                    <span className="text-slate-700 dark:text-slate-300">
-                      {item.title}
-                    </span>
+              {module.items.length > 0 ? (
+                module.items.map((item, itemIndex) => (
+                  <div
+                    key={itemIndex}
+                    className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-b-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <PlayCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {item.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        {item.duration} min
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
-                      {item.duration}
-                    </span>
-                    <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-xs text-slate-600 dark:text-slate-400">
-                      {item.type}
-                    </span>
-                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-center text-slate-500">
+                  No lessons available yet.
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>

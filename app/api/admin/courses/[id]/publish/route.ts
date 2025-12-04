@@ -6,7 +6,7 @@ import clientPromise from "@/lib/mongodb";
 
 export async function PUT(
   request: NextRequest,
-  { params }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,7 +19,8 @@ export async function PUT(
     const userRole = (session.user as any).role;
     console.log("Publish request - User role:", userRole);
 
-    const courseId = params.id;
+    const { id } = await params;
+    const courseId = id;
     const { isPublished } = await request.json();
 
     const client = await clientPromise;
@@ -55,6 +56,13 @@ export async function PUT(
 
     // Get updated course
     const updatedCourse = await db.collection("courses").findOne({ _id: new ObjectId(courseId) });
+
+    if (!updatedCourse) {
+      return NextResponse.json(
+        { error: "Course not found after update" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

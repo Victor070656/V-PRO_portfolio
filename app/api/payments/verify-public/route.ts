@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     if (paymentData && paymentData.status === 'successful') {
       // Check if payment record already exists
       const existingPayment = await db.collection("payments").findOne({
-        transactionId: paymentData.transaction_id || paymentData.id
+        transactionId: paymentData.transaction_id || (paymentData as any).id
       });
 
       if (existingPayment) {
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       const paymentRecord = {
         userId: new ObjectId(userId),
         courseId: new ObjectId(courseId),
-        transactionId: paymentData.transaction_id || paymentData.id,
+        transactionId: paymentData.transaction_id || (paymentData as any).id,
         txRef: paymentData.tx_ref || txRef,
         amount: paymentData.amount,
         currency: paymentData.currency || 'NGN',
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         customer: {
           email: paymentData.customer?.email,
           name: paymentData.customer?.name,
-          phone: paymentData.customer?.phone_number
+          phone: (paymentData.customer as any)?.phone_number
         },
         metadata: paymentData.meta,
         createdAt: new Date(paymentData.created_at || Date.now()),
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
         {
           $set: {
             status: "successful",
-            transactionId: paymentData.transaction_id || paymentData.id,
+            transactionId: paymentData.transaction_id || (paymentData as any).id,
             verifiedAt: new Date()
           }
         }
@@ -172,11 +172,11 @@ export async function POST(request: NextRequest) {
         success: true,
         payment: {
           id: paymentResult.insertedId,
-          transactionId: paymentData.transaction_id || paymentData.id,
+          transactionId: paymentData.transaction_id || (paymentData as any).id,
           txRef: paymentData.tx_ref || txRef,
           amount: paymentData.amount,
           status: 'successful',
-          courseTitle: paymentData.meta?.course_title || "Course"
+          courseTitle: (paymentData.meta as any)?.course_title || "Course"
         },
         enrollment: true
       });

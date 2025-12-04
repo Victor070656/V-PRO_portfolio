@@ -16,7 +16,7 @@ export default function StudentSignInPage() {
     rememberMe: false,
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (error) setError("");
   };
@@ -136,7 +136,7 @@ export default function StudentSignInPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -202,8 +202,7 @@ export default function StudentSignInPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
   }
 
   // Main return for non-loading state

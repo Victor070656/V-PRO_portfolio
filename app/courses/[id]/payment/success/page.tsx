@@ -23,6 +23,11 @@ export default function PaymentSuccessPage() {
       setStatus("success");
       setMessage("Payment successful! You are now enrolled.");
     } 
+    // Handle cancelled payment
+    else if (statusParam === "cancelled") {
+      setStatus("error");
+      setMessage("Payment was cancelled.");
+    }
     // If we have a transaction_id, we could optionally verify it with the backend here
     // But for now, we'll trust the redirect params and the webhook should have handled the actual enrollment
     else if (transactionId || txRef) {
