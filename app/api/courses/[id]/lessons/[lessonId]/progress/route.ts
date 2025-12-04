@@ -6,7 +6,7 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   req: Request,
-  { params }: { params: { courseId: string; lessonId: string } }
+  { params }: { params: Promise<{ courseId: string; lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,13 +14,16 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Await params before accessing properties
+    const { courseId, lessonId } = await params;
+
     const client = await clientPromise;
     const db = client.db();
 
     const progress = await db.collection("progress").findOne({
       userId: new ObjectId(session.user.id),
-      courseId: new ObjectId(params.courseId),
-      lessonId: new ObjectId(params.lessonId),
+      courseId: new ObjectId(courseId),
+      lessonId: new ObjectId(lessonId),
     });
 
     return NextResponse.json({ progress });
@@ -32,13 +35,16 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { courseId: string; lessonId: string } }
+  { params }: { params: Promise<{ courseId: string; lessonId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Await params before accessing properties
+    const { courseId, lessonId } = await params;
 
     const data = await req.json();
     const { watchTime, lastPosition, completed } = data;
@@ -60,8 +66,8 @@ export async function POST(
     await db.collection("progress").updateOne(
       {
         userId: new ObjectId(session.user.id),
-        courseId: new ObjectId(params.courseId),
-        lessonId: new ObjectId(params.lessonId),
+        courseId: new ObjectId(courseId),
+        lessonId: new ObjectId(lessonId),
       },
       {
         $set: updateData,
@@ -79,10 +85,10 @@ export async function POST(
       await db.collection("enrollments").updateOne(
         {
           userId: new ObjectId(session.user.id),
-          courseId: new ObjectId(params.courseId),
+          courseId: new ObjectId(courseId),
         },
         {
-          $addToSet: { completedLessons: new ObjectId(params.lessonId) },
+          $addToSet: { completedLessons: new ObjectId(lessonId) },
           $set: { lastAccessedAt: new Date() }
         }
       );

@@ -1,133 +1,126 @@
-import Header from "@/components/admin/Header";
-import StatCard from "@/components/admin/StatCard";
-import RecentProjects from "@/components/admin/RecentProjects";
-import Link from "next/link";
-import { Users, BookOpen, DollarSign, CreditCard, Shield, FolderKanban } from "lucide-react";
-import {  Eye, TrendingUp, Clock } from "lucide-react";
-// import { authOptions } from "../api/auth/[...nextauth]/route";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Plus, BookOpen, Users, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
+
   if (!session) {
-    redirect("/signin");
+    redirect("/admin/signin");
   }
 
+  const quickActions = [
+    {
+      title: "Manage Courses",
+      description: "Create, edit, and organize your courses",
+      href: "/admin/courses",
+      icon: BookOpen,
+      gradient: "from-indigo-500 to-purple-600",
+      iconBg: "bg-indigo-100 dark:bg-indigo-900/30",
+      iconColor: "text-indigo-600 dark:text-indigo-400"
+    },
+    {
+      title: "View Students",
+      description: "Monitor student progress and activity",
+      href: "/admin/students",
+      icon: Users,
+      gradient: "from-blue-500 to-cyan-600",
+      iconBg: "bg-blue-100 dark:bg-blue-900/30",
+      iconColor: "text-blue-600 dark:text-blue-400"
+    },
+    {
+      title: "Track Progress",
+      description: "View completion rates and analytics",
+      href: "/admin/progress",
+      icon: TrendingUp,
+      gradient: "from-green-500 to-emerald-600",
+      iconBg: "bg-green-100 dark:bg-green-900/30",
+      iconColor: "text-green-600 dark:text-green-400"
+    },
+  ];
+
   return (
-    <>
-      <Header />
-      <main className="flex-1 p-8 overflow-y-auto bg-[var(--background-color)]">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Welcome back, Victor!</h1>
-          <p className="text-[var(--text-secondary)]">Here's what's happening with your portfolio today.</p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Total Projects"
-            value="12"
-            icon={FolderKanban}
-            change="+2 this month"
-            changeColor="text-green-500"
-          />
-          <StatCard
-            title="Portfolio Views"
-            value="1,234"
-            icon={Eye}
-            change="+15% this week"
-            changeColor="text-green-500"
-          />
-          <StatCard
-            title="Featured Projects"
-            value="5"
-            icon={TrendingUp}
-            change="Updated recently"
-            changeColor="text-blue-500"
-          />
-          <StatCard
-            title="Last Updated"
-            value="2 days ago"
-            icon={Clock}
-            change="Keep it fresh!"
-            changeColor="text-orange-500"
-          />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="admin-card p-6 rounded-xl">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <Link
-                href="/admin/projects"
-                className="flex items-center justify-between p-4 bg-[var(--secondary-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[var(--accent-color)] rounded-lg flex items-center justify-center">
-                    <FolderKanban className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-[var(--text-primary)]">Add New Project</p>
-                    <p className="text-sm text-[var(--text-secondary)]">Showcase your latest work</p>
-                  </div>
-                </div>
-                <span className="text-[var(--text-secondary)]">→</span>
-              </Link>
-              
-              <Link
-                href="/"
-                className="flex items-center justify-between p-4 bg-[var(--secondary-color)] rounded-lg hover:bg-[var(--hover-color)] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                    <Eye className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-[var(--text-primary)]">View Portfolio</p>
-                    <p className="text-sm text-[var(--text-secondary)]">See how visitors see your work</p>
-                  </div>
-                </div>
-                <span className="text-[var(--text-secondary)]">→</span>
-              </Link>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-8 shadow-2xl">
+        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-6 h-6 text-yellow-300 animate-pulse" />
+                <span className="text-white/90 text-sm font-medium">Admin Dashboard</span>
+              </div>
+              <h1 className="text-4xl font-black text-white mb-2">
+                Welcome back, Admin!
+              </h1>
+              <p className="text-white/80 text-lg">
+                Here's what's happening with your learning platform today.
+              </p>
             </div>
-          </div>
-
-          <div className="admin-card p-6 rounded-xl">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Portfolio Tips</h2>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-[var(--accent-color)] rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-[var(--text-primary)] text-sm">Keep projects updated</p>
-                  <p className="text-xs text-[var(--text-secondary)]">Regular updates show you're active</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-[var(--text-primary)] text-sm">Use high-quality images</p>
-                  <p className="text-xs text-[var(--text-secondary)]">Visual appeal matters for first impressions</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                <div>
-                  <p className="font-medium text-[var(--text-primary)] text-sm">Write clear descriptions</p>
-                  <p className="text-xs text-[var(--text-secondary)]">Help visitors understand your work</p>
-                </div>
-              </div>
-            </div>
+            <Link
+              href="/admin/courses/create"
+              className="group bg-white hover:bg-white/90 text-indigo-600 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105 flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+              Create Course
+            </Link>
           </div>
         </div>
+      </div>
 
-        {/* Recent Projects */}
-        <div>
-          <RecentProjects />
+      {/* Analytics Dashboard */}
+      <AnalyticsDashboard />
+
+      {/* Quick Actions */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Quick Actions</h2>
+          <span className="text-sm text-slate-500 dark:text-slate-400">Jump to frequently used sections</span>
         </div>
-      </main>
-    </>
+        <div className="grid md:grid-cols-3 gap-6">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <Link
+                key={index}
+                href={action.href}
+                className="group relative overflow-hidden bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-full blur-2xl" 
+                     style={{ background: `linear-gradient(to bottom right, var(--tw-gradient-stops))` }} />
+                
+                <div className="relative z-10">
+                  <div className={`w-12 h-12 ${action.iconBg} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className={`w-6 h-6 ${action.iconColor}`} />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {action.title}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                    {action.description}
+                  </p>
+                  <div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+                    <span>Go to {action.title.toLowerCase()}</span>
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Recent Activity Placeholder */}
+      <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Recent Activity</h2>
+        <p className="text-slate-600 dark:text-slate-400">
+          Activity feed coming soon - track recent enrollments, payments, and course updates.
+        </p>
+      </div>
+    </div>
   );
 }

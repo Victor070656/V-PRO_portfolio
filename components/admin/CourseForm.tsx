@@ -218,7 +218,7 @@ export default function CourseForm({ initialData, isEdit = false }: CourseFormPr
               value={formData.thumbnail}
               onChange={handleChange}
               className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-              placeholder="https://..."
+              placeholder="https://drive.google.com/uc?export=view&id="
             />
           </div>
 

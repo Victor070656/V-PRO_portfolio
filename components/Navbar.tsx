@@ -137,7 +137,7 @@ export default function Navbar() {
               <>
                 {/* User is not authenticated */}
                 <Link
-                  className="button_primary"
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-600 text-[var(--text-primary)] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
                   href="/auth/signin"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
