@@ -128,7 +128,7 @@ export default function CourseCard({
           </div>
 
           {/* CTA */}
-          <button className="mt-4 w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 flex items-center justify-center gap-2">
+          <button className="mt-4 w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold cursor-pointer transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 flex items-center justify-center gap-2">
             <span>Enroll Now</span>
             <ArrowRight className="w-4 h-4" />
           </button>
