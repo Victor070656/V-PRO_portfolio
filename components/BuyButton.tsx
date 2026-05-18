@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { Course } from "@/lib/models/course";
-import { ShoppingCart, Loader2, CheckCircle2 } from "lucide-react";
+import { ShoppingCart, Loader2, CheckCircle2, PlayCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils/currency";
 
@@ -27,7 +27,7 @@ export default function BuyButton({ course, isEnrolled }: BuyButtonProps) {
 
     // Check if already enrolled
     if (isEnrolled) {
-      router.push(`/courses/${course._id}`);
+      router.push(`/courses/${course._id}/learn`);
       return;
     }
 
@@ -87,15 +87,15 @@ export default function BuyButton({ course, isEnrolled }: BuyButtonProps) {
     }
   };
 
-  // If already enrolled, show "Continue Learning" button
+  // If already enrolled, show "Watch" button
   if (isEnrolled) {
     return (
       <button
         onClick={() => router.push(`/courses/${course._id}/learn`)}
         className="group w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/50 hover:-translate-y-1 flex items-center justify-center gap-3"
       >
-        <CheckCircle2 className="w-6 h-6" />
-        <span>Continue Learning</span>
+        <PlayCircle className="w-6 h-6" />
+        <span>Watch</span>
       </button>
     );
   }
