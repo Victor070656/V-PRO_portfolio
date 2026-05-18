@@ -131,7 +131,7 @@ export default function VideoPlayer({
       <div className="aspect-video w-full bg-black md:rounded-xl mx-auto overflow-hidden relative">
         <div
           id="youtube-player"
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 w-full h-full border-0"
         ></div>
       </div>
     );
@@ -147,7 +147,7 @@ export default function VideoPlayer({
       );
 
     return (
-      <div className="aspect-video w-full bg-black md:rounded-xl overflow-hidden relative">
+      <div className="aspect-video w-full bg-black md:rounded-xl mx-auto overflow-hidden relative">
         <iframe
           src={embedUrl}
           className="absolute inset-0 w-full h-full"

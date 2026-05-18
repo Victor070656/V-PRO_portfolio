@@ -81,9 +81,9 @@ export default function LessonContent({
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto bg-white dark:bg-slate-950">
       {/* Video Player Container */}
-      <div className="w-full bg-black">
+      <div className="w-full bg-black shrink-0 relative">
         {lesson.videoUrl ? (
-          <div className="w-full max-w-6xl mx-auto">
+          <div className="w-full max-w-6xl mx-auto relative">
             <VideoPlayer
               url={lesson.videoUrl}
               onProgress={handleProgress}
