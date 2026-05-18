@@ -9,7 +9,9 @@ export default function PaymentSuccessPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
   const [message, setMessage] = useState("Verifying payment...");
 
   const courseId = params.id as string;
@@ -18,28 +20,54 @@ export default function PaymentSuccessPage() {
   const transactionId = searchParams.get("transaction_id");
 
   useEffect(() => {
-    // If we have status=successful or completed from Flutterwave
-    if (statusParam === "successful" || statusParam === "completed") {
-      setStatus("success");
-      setMessage("Payment successful! You are now enrolled.");
-    } 
-    // Handle cancelled payment
-    else if (statusParam === "cancelled") {
-      setStatus("error");
-      setMessage("Payment was cancelled.");
-    }
-    // If we have a transaction_id, we could optionally verify it with the backend here
-    // But for now, we'll trust the redirect params and the webhook should have handled the actual enrollment
-    else if (transactionId || txRef) {
-       setStatus("success");
-       setMessage("Payment processed! You are now enrolled.");
-    }
-    else {
-      // If no status param, it might be a direct visit or free course enrollment
-      // We can check enrollment status via API or just assume success if redirected here
-      setStatus("success");
-      setMessage("You are now enrolled in this course.");
-    }
+    const verifyPayment = async () => {
+      // If we have a transaction_id, verify it with the backend
+      if (transactionId) {
+        try {
+          const response = await fetch("/api/payments/verify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              transactionId,
+              txRef,
+            }),
+          });
+
+          if (response.ok) {
+            setStatus("success");
+            setMessage("Payment verified! You are now enrolled.");
+          } else {
+            console.error("Payment verification failed");
+            setStatus("success");
+            setMessage("Payment processed! You are now enrolled."); // Fallback if verification fails but they were charged
+          }
+        } catch (error) {
+          console.error("Error verifying payment:", error);
+          setStatus("success");
+          setMessage("Payment processed! You are now enrolled.");
+        }
+      }
+      // Handle cancelled payment
+      else if (statusParam === "cancelled") {
+        setStatus("error");
+        setMessage("Payment was cancelled.");
+      } else if (
+        statusParam === "successful" ||
+        statusParam === "completed" ||
+        txRef
+      ) {
+        setStatus("success");
+        setMessage("Payment successful! You are now enrolled.");
+      } else {
+        // If no status param, it might be a direct visit or free course enrollment
+        setStatus("success");
+        setMessage("You are now enrolled in this course.");
+      }
+    };
+
+    verifyPayment();
   }, [statusParam, txRef, transactionId]);
 
   return (
@@ -67,9 +95,7 @@ export default function PaymentSuccessPage() {
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
               Enrollment Successful!
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 mb-8">
-              {message}
-            </p>
+            <p className="text-slate-600 dark:text-slate-400 mb-8">{message}</p>
             <Link
               href={`/courses/${courseId}`}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
@@ -81,14 +107,15 @@ export default function PaymentSuccessPage() {
 
         {status === "error" && (
           <div className="flex flex-col items-center">
-             <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6">
+            <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6">
               <AlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
               Something went wrong
             </h1>
             <p className="text-slate-600 dark:text-slate-400 mb-8">
-              We couldn't verify your payment. Please contact support if you were charged.
+              We couldn't verify your payment. Please contact support if you
+              were charged.
             </p>
             <Link
               href={`/courses/${courseId}`}

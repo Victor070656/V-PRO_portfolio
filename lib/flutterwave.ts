@@ -1,5 +1,5 @@
-import Flutterwave from 'flutterwave-node-v3';
-import { v4 as uuidv4 } from 'uuid';
+import Flutterwave from "flutterwave-node-v3";
+import { v4 as uuidv4 } from "uuid";
 
 export interface FlutterwavePaymentData {
   tx_ref: string;
@@ -42,14 +42,18 @@ export interface PaymentVerificationResponse {
 }
 
 export interface PaymentWebhookData {
-  event: 'charge.completed' | 'charge.failed' | 'transfer.completed' | 'transfer.failed';
+  event:
+    | "charge.completed"
+    | "charge.failed"
+    | "transfer.completed"
+    | "transfer.failed";
   data: {
     id: number;
     tx_ref: string;
     flw_ref: string;
     amount: number;
     currency: string;
-    status: 'successful' | 'failed';
+    status: "successful" | "failed";
     payment_type: string;
     created_at: string;
     account_id: number;
@@ -71,31 +75,30 @@ class FlutterwaveService {
   private flw: any;
 
   constructor() {
-    const publicKey = process.env.FLUTTERWAVE_PUBLIC_KEY || '';
-    const secretKey = process.env.FLUTTERWAVE_SECRET_KEY || '';
+    const publicKey = process.env.FLUTTERWAVE_PUBLIC_KEY || "";
+    const secretKey = process.env.FLUTTERWAVE_SECRET_KEY || "";
 
     if (!publicKey || !secretKey) {
-      console.error('Flutterwave credentials not configured');
-      throw new Error('Flutterwave credentials are required');
+      console.error("Flutterwave credentials not configured");
+      throw new Error("Flutterwave credentials are required");
     }
 
     try {
-      console.log('Initializing Flutterwave with real credentials...');
+      console.log("Initializing Flutterwave with real credentials...");
       this.flw = new Flutterwave(publicKey, secretKey);
 
       // Test basic initialization - the library structure may be different
-      console.log('Flutterwave instance created:', typeof this.flw);
+      console.log("Flutterwave instance created:", typeof this.flw);
 
       // For flutterwave-node-v3, the API structure might be different
       // Let's initialize without strict method checking for now
-      console.log('Flutterwave initialized successfully with real API');
+      console.log("Flutterwave initialized successfully with real API");
     } catch (error) {
-      console.error('Flutterwave initialization error:', error);
-      throw new Error('Failed to initialize Flutterwave service');
+      console.error("Flutterwave initialization error:", error);
+      throw new Error("Failed to initialize Flutterwave service");
     }
   }
 
-  
   /**
    * Initialize a payment transaction
    */
@@ -110,14 +113,14 @@ class FlutterwaveService {
     redirectUrl: string;
   }) {
     const tx_ref = uuidv4();
-    const currency = 'NGN'; // Default to Nigerian Naira, can be made configurable
+    const currency = "NGN"; // Default to Nigerian Naira, can be made configurable
 
     const paymentPayload: FlutterwavePaymentData = {
       tx_ref,
       amount: paymentData.amount,
       currency,
       redirect_url: paymentData.redirectUrl,
-      payment_options: 'card, banktransfer, ussd, mobilemoney', // All available options
+      payment_options: "card, banktransfer, ussd, mobilemoney", // All available options
       customer: {
         email: paymentData.email,
         name: paymentData.name,
@@ -126,7 +129,7 @@ class FlutterwaveService {
       customizations: {
         title: paymentData.courseTitle,
         description: `Payment for ${paymentData.courseTitle}`,
-        logo: 'https://your-domain.com/logo.png', // Update with actual logo URL
+        logo: "https://your-domain.com/logo.png", // Update with actual logo URL
       },
       meta: {
         course_id: paymentData.courseId,
@@ -135,45 +138,45 @@ class FlutterwaveService {
     };
 
     try {
-      console.log('Initializing payment with payload:', paymentPayload);
+      console.log("Initializing payment with payload:", paymentPayload);
 
       // Use Flutterwave's API to generate payment link
-      console.log('Creating Flutterwave payment transaction...');
+      console.log("Creating Flutterwave payment transaction...");
 
       // Use the standard Flutterwave API for payment initialization
       const apiPaymentData = {
         tx_ref: tx_ref,
         amount: paymentData.amount,
-        currency: 'NGN',
+        currency: "NGN",
         redirect_url: paymentData.redirectUrl,
-        payment_options: 'card, banktransfer, ussd',
+        payment_options: "card, banktransfer, ussd",
         customer: {
           email: paymentData.email,
           name: paymentData.name,
-          phone_number: paymentData.phone
+          phone_number: paymentData.phone,
         },
         meta: paymentPayload.meta,
         customizations: {
           title: paymentData.courseTitle,
           description: `Payment for ${paymentData.courseTitle}`,
-          logo: 'https://your-domain.com/logo.png'
-        }
+          logo: "https://your-domain.com/logo.png",
+        },
       };
 
       // Make direct API call to Flutterwave to create payment link
-      const response = await fetch('https://api.flutterwave.com/v3/payments', {
-        method: 'POST',
+      const response = await fetch("https://api.flutterwave.com/v3/payments", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(apiPaymentData)
+        body: JSON.stringify(apiPaymentData),
       });
 
       const result = await response.json();
-      console.log('Flutterwave API response:', result);
+      console.log("Flutterwave API response:", result);
 
-      if (result.status === 'success' && result.data.link) {
+      if (result.status === "success" && result.data.link) {
         return {
           success: true,
           data: {
@@ -182,17 +185,17 @@ class FlutterwaveService {
           },
         };
       } else {
-        console.error('Flutterwave API error:', result);
+        console.error("Flutterwave API error:", result);
         return {
           success: false,
-          error: result.message || 'Payment initialization failed',
+          error: result.message || "Payment initialization failed",
         };
       }
     } catch (error) {
-      console.error('Flutterwave payment initialization error:', error);
+      console.error("Flutterwave payment initialization error:", error);
       return {
         success: false,
-        error: 'Payment service temporarily unavailable - Please try again',
+        error: "Payment service temporarily unavailable - Please try again",
       };
     }
   }
@@ -206,26 +209,35 @@ class FlutterwaveService {
     error?: string;
   }> {
     try {
-      const response = await this.flw.Transaction.verify({
-        id: transactionId,
-      });
+      const response = await fetch(
+        `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
 
-      if (response.status === 'success') {
+      const result = await response.json();
+
+      if (result.status === "success") {
         return {
           success: true,
-          data: response.data as PaymentVerificationResponse,
+          data: result.data as PaymentVerificationResponse,
         };
       } else {
         return {
           success: false,
-          error: response.message || 'Transaction verification failed',
+          error: result.message || "Transaction verification failed",
         };
       }
     } catch (error) {
-      console.error('Flutterwave verification error:', error);
+      console.error("Flutterwave verification error:", error);
       return {
         success: false,
-        error: 'Verification service unavailable',
+        error: "Verification service unavailable",
       };
     }
   }
@@ -241,7 +253,7 @@ class FlutterwaveService {
     try {
       const response = await this.flw.Transaction.find({ id: transactionId });
 
-      if (response.status === 'success') {
+      if (response.status === "success") {
         return {
           success: true,
           data: response.data,
@@ -249,14 +261,14 @@ class FlutterwaveService {
       } else {
         return {
           success: false,
-          error: response.message || 'Transaction not found',
+          error: response.message || "Transaction not found",
         };
       }
     } catch (error) {
-      console.error('Flutterwave get transaction error:', error);
+      console.error("Flutterwave get transaction error:", error);
       return {
         success: false,
-        error: 'Transaction service unavailable',
+        error: "Transaction service unavailable",
       };
     }
   }
@@ -267,15 +279,15 @@ class FlutterwaveService {
   verifyWebhookSignature(payload: string, signature: string): boolean {
     const secretHash = process.env.FLUTTERWAVE_ENCRYPTION_KEY;
     if (!secretHash) {
-      console.error('Flutterwave encryption key not configured');
+      console.error("Flutterwave encryption key not configured");
       return false;
     }
 
-    const crypto = require('crypto');
+    const crypto = require("crypto");
     const expectedSignature = crypto
-      .createHmac('sha256', secretHash)
+      .createHmac("sha256", secretHash)
       .update(payload)
-      .digest('hex');
+      .digest("hex");
 
     return expectedSignature === signature;
   }
@@ -291,26 +303,26 @@ class FlutterwaveService {
     try {
       const { event, data } = webhookData;
 
-      if (event === 'charge.completed') {
-        if (data.status === 'successful') {
+      if (event === "charge.completed") {
+        if (data.status === "successful") {
           // Payment successful - process enrollment
           return {
             success: true,
             processed: true,
-            message: 'Payment successful, enrollment processed',
+            message: "Payment successful, enrollment processed",
           };
         } else {
           return {
             success: false,
             processed: false,
-            message: 'Payment failed',
+            message: "Payment failed",
           };
         }
-      } else if (event === 'charge.failed') {
+      } else if (event === "charge.failed") {
         return {
           success: false,
           processed: false,
-          message: 'Payment failed',
+          message: "Payment failed",
         };
       }
 
@@ -318,14 +330,14 @@ class FlutterwaveService {
       return {
         success: true,
         processed: false,
-        message: 'Event processed',
+        message: "Event processed",
       };
     } catch (error) {
-      console.error('Webhook processing error:', error);
+      console.error("Webhook processing error:", error);
       return {
         success: false,
         processed: false,
-        message: 'Webhook processing failed',
+        message: "Webhook processing failed",
       };
     }
   }
@@ -335,18 +347,18 @@ export const flutterwaveService = new FlutterwaveService();
 
 // Payment status constants
 export const PAYMENT_STATUS = {
-  PENDING: 'pending',
-  SUCCESSFUL: 'successful',
-  FAILED: 'failed',
-  REFUNDED: 'refunded',
+  PENDING: "pending",
+  SUCCESSFUL: "successful",
+  FAILED: "failed",
+  REFUNDED: "refunded",
 } as const;
 
 // Payment methods supported
 export const PAYMENT_METHODS = {
-  CARD: 'card',
-  BANK_TRANSFER: 'banktransfer',
-  USSD: 'ussd',
-  MOBILE_MONEY: 'mobilemoney',
-  QR: 'qr',
-  BARCODE: 'barcode',
+  CARD: "card",
+  BANK_TRANSFER: "banktransfer",
+  USSD: "ussd",
+  MOBILE_MONEY: "mobilemoney",
+  QR: "qr",
+  BARCODE: "barcode",
 } as const;
