@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import { Lesson } from "@/lib/models/course";
 import VideoPlayer from "@/components/VideoPlayer";
-import { CheckCircle, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Download,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -29,7 +35,10 @@ export default function LessonContent({
   const router = useRouter();
   const [progress, setProgress] = useState(0);
 
-  const handleProgress = async (state: { played: number; playedSeconds: number }) => {
+  const handleProgress = async (state: {
+    played: number;
+    playedSeconds: number;
+  }) => {
     // Update local progress state if needed
     // You might want to debounce API calls here
     if (state.played > 0.9 && !isCompleted) {
@@ -44,17 +53,21 @@ export default function LessonContent({
   };
 
   const saveProgress = (seconds: number) => {
-     // Debounce logic would go here, for now we'll just log it or rely on a less frequent update
-     // To avoid spamming the API, we can check if enough time has passed since last save
-     const now = Date.now();
-     if (now - lastSaveTime > 5000) { // Save every 5 seconds
-       setLastSaveTime(now);
-       fetch(`/api/courses/${courseId}/lessons/${lesson._id}/progress`, {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ lastPosition: seconds, watchTime: seconds / 60 }), // watchTime is approximate
-       }).catch(err => console.error("Error saving progress", err));
-     }
+    // Debounce logic would go here, for now we'll just log it or rely on a less frequent update
+    // To avoid spamming the API, we can check if enough time has passed since last save
+    const now = Date.now();
+    if (now - lastSaveTime > 5000) {
+      // Save every 5 seconds
+      setLastSaveTime(now);
+      fetch(`/api/courses/${courseId}/lessons/${lesson._id}/progress`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lastPosition: seconds,
+          watchTime: seconds / 60,
+        }), // watchTime is approximate
+      }).catch((err) => console.error("Error saving progress", err));
+    }
   };
 
   const [lastSaveTime, setLastSaveTime] = useState(0);
@@ -68,16 +81,18 @@ export default function LessonContent({
   return (
     <div className="flex-1 flex flex-col h-full overflow-y-auto bg-white dark:bg-slate-950">
       {/* Video Player Container */}
-      <div className="w-full bg-black aspect-video">
+      <div className="w-full bg-black">
         {lesson.videoUrl ? (
-          <VideoPlayer
-            url={lesson.videoUrl}
-            onProgress={handleProgress}
-            onEnded={handleVideoEnded}
-            initialProgress={initialProgress}
-          />
+          <div className="w-full max-w-6xl mx-auto">
+            <VideoPlayer
+              url={lesson.videoUrl}
+              onProgress={handleProgress}
+              onEnded={handleVideoEnded}
+              initialProgress={initialProgress}
+            />
+          </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white">
+          <div className="w-full aspect-video flex items-center justify-center text-white">
             No video available for this lesson
           </div>
         )}
@@ -166,8 +181,8 @@ export default function LessonContent({
             </Link>
           ) : (
             <Link
-               href={`/courses/${courseId}`}
-               className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
+              href={`/courses/${courseId}`}
+              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
             >
               Back to Course Home
               <ChevronRight className="w-5 h-5" />

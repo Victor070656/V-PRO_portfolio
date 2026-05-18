@@ -1,11 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getVideoType, getYouTubeVideoId, getGoogleDriveEmbedUrl } from "@/lib/video-utils";
+import {
+  getVideoType,
+  getYouTubeVideoId,
+  getGoogleDriveEmbedUrl,
+} from "@/lib/video-utils";
 
 interface VideoPlayerProps {
   url: string;
-  onProgress?: (progress: { played: number; playedSeconds: number; loaded: number }) => void;
+  onProgress?: (progress: {
+    played: number;
+    playedSeconds: number;
+    loaded: number;
+  }) => void;
   onEnded?: () => void;
   onDuration?: (duration: number) => void;
   initialProgress?: number; // in seconds
@@ -18,7 +26,13 @@ declare global {
   }
 }
 
-export default function VideoPlayer({ url, onProgress, onEnded, onDuration, initialProgress = 0 }: VideoPlayerProps) {
+export default function VideoPlayer({
+  url,
+  onProgress,
+  onEnded,
+  onDuration,
+  initialProgress = 0,
+}: VideoPlayerProps) {
   const videoType = getVideoType(url);
   const playerRef = useRef<any>(null);
   const [isReady, setIsReady] = useState(false);
@@ -26,15 +40,15 @@ export default function VideoPlayer({ url, onProgress, onEnded, onDuration, init
 
   // YouTube Player Implementation
   useEffect(() => {
-    if (videoType !== 'youtube') return;
+    if (videoType !== "youtube") return;
 
     const loadYouTubeAPI = () => {
       if (!window.YT) {
-        const tag = document.createElement('script');
+        const tag = document.createElement("script");
         tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
+        const firstScriptTag = document.getElementsByTagName("script")[0];
         firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-        
+
         window.onYouTubeIframeAPIReady = initializePlayer;
       } else {
         initializePlayer();
@@ -45,9 +59,9 @@ export default function VideoPlayer({ url, onProgress, onEnded, onDuration, init
       const videoId = getYouTubeVideoId(url);
       if (!videoId) return;
 
-      playerRef.current = new window.YT.Player('youtube-player', {
-        height: '100%',
-        width: '100%',
+      playerRef.current = new window.YT.Player("youtube-player", {
+        height: "100%",
+        width: "100%",
         videoId: videoId,
         playerVars: {
           playsinline: 1,
@@ -67,12 +81,12 @@ export default function VideoPlayer({ url, onProgress, onEnded, onDuration, init
             } else {
               stopProgressTracking();
             }
-            
+
             if (event.data === 0 && onEnded) {
               onEnded();
             }
-          }
-        }
+          },
+        },
       });
     };
 
@@ -88,17 +102,17 @@ export default function VideoPlayer({ url, onProgress, onEnded, onDuration, init
 
   const startProgressTracking = () => {
     if (progressInterval.current) clearInterval(progressInterval.current);
-    
+
     progressInterval.current = setInterval(() => {
       if (playerRef.current && playerRef.current.getCurrentTime) {
         const currentTime = playerRef.current.getCurrentTime();
         const duration = playerRef.current.getDuration();
-        
+
         if (onProgress) {
           onProgress({
             played: currentTime / duration,
             playedSeconds: currentTime,
-            loaded: playerRef.current.getVideoLoadedFraction()
+            loaded: playerRef.current.getVideoLoadedFraction(),
           });
         }
       }
@@ -112,28 +126,37 @@ export default function VideoPlayer({ url, onProgress, onEnded, onDuration, init
     }
   };
 
-  if (videoType === 'youtube') {
+  if (videoType === "youtube") {
     return (
-      <div className="aspect-video w-full bg-black rounded-xl overflow-hidden relative">
-        <div id="youtube-player" className="w-full h-full"></div>
+      <div className="aspect-video w-full bg-black md:rounded-xl mx-auto overflow-hidden relative">
+        <div
+          id="youtube-player"
+          className="absolute inset-0 w-full h-full"
+        ></div>
       </div>
     );
   }
 
-  if (videoType === 'drive') {
+  if (videoType === "drive") {
     const embedUrl = getGoogleDriveEmbedUrl(url);
-    if (!embedUrl) return <div className="bg-gray-200 p-4 rounded text-center">Invalid Google Drive URL</div>;
+    if (!embedUrl)
+      return (
+        <div className="bg-gray-200 p-4 rounded text-center">
+          Invalid Google Drive URL
+        </div>
+      );
 
     return (
-      <div className="aspect-video w-full bg-black rounded-xl overflow-hidden">
+      <div className="aspect-video w-full bg-black md:rounded-xl overflow-hidden relative">
         <iframe
           src={embedUrl}
-          className="w-full h-full"
+          className="absolute inset-0 w-full h-full"
           allow="autoplay"
           allowFullScreen
         ></iframe>
         <div className="text-xs text-center text-gray-500 mt-1">
-          Note: Automatic progress tracking is not supported for Google Drive videos.
+          Note: Automatic progress tracking is not supported for Google Drive
+          videos.
         </div>
       </div>
     );
