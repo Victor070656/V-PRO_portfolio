@@ -145,7 +145,6 @@ export async function POST(request: NextRequest) {
       { upsert: true }
     );
 
-    // Calculate overall progress
     const course = await db.collection("courses").findOne({
       _id: courseObjectId
     });
@@ -154,17 +153,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    // Get all lesson progress for this course
     const allLessonProgress = await db.collection("progress").find({
       userId: userId,
       courseId: courseObjectId
     }).toArray();
 
     const completedLessons = allLessonProgress.filter(p => p.completed);
-    const overallProgress = Math.round((completedLessons.length / course.lessons.length) * 100);
-
-    // Update enrollment
-    const updatedCompletedLessons = completedLessons.map(p => p.lessonId);
+    const completedLessonIds = completedLessons.map(p => p.lessonId);
+    const overallProgress = course.lessons.length > 0
+      ? Math.round((completedLessons.length / course.lessons.length) * 100)
+      : 0;
     const isCourseCompleted = overallProgress === 100;
 
     await db.collection("enrollments").updateOne(
@@ -175,9 +173,9 @@ export async function POST(request: NextRequest) {
       {
         $set: {
           progress: overallProgress,
-          completedLessons: updatedCompletedLessons,
+          completedLessons: completedLessonIds,
           lastAccessedAt: new Date(),
-          completedAt: isCourseCompleted ? new Date() : enrollment.completedAt,
+          completedAt: isCourseCompleted ? new Date() : null,
           ...(isCourseCompleted && {
             "certificate.issued": true,
             "certificate.issuedAt": new Date()
