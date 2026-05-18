@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Users, Search, Mail, BookOpen, TrendingUp, Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, Calendar, Mail, Search, TrendingUp, Users } from "lucide-react";
 
 interface Student {
   _id: string;
@@ -37,172 +37,102 @@ export default function StudentsPage() {
     }
   };
 
-  const filteredStudents = students.filter(student =>
-    student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalStudents = students.length;
-  const activeStudents = students.filter(s => 
-    new Date(s.lastAccessedAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
+  const activeStudents = students.filter(
+    (s) => new Date(s.lastAccessedAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
   ).length;
-  const avgEnrollments = students.length > 0 
-    ? Math.round(students.reduce((sum, s) => sum + s.enrollmentCount, 0) / students.length)
-    : 0;
+  const avgEnrollments =
+    students.length > 0
+      ? Math.round(students.reduce((sum, s) => sum + s.enrollmentCount, 0) / students.length)
+      : 0;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Gradient Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl p-8 shadow-2xl">
-        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-              <Users className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black text-white">Students</h1>
-              <p className="text-white/80 text-lg mt-1">
-                Manage and monitor all registered students
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <section className="arch-panel p-8">
+        <p className="arch-kicker mb-3">Student Records</p>
+        <h1 className="arch-heading-md">Students</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage and monitor all registered learners.
+        </p>
+      </section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Students</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{totalStudents}</h3>
-            </div>
-          </div>
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="arch-panel p-5">
+          <Users className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Total Students</p>
+          <p className="text-3xl font-semibold">{totalStudents}</p>
         </div>
-
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Active (30 days)</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeStudents}</h3>
-            </div>
-          </div>
+        <div className="arch-panel p-5">
+          <TrendingUp className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Active (30 days)</p>
+          <p className="text-3xl font-semibold">{activeStudents}</p>
         </div>
-
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <BookOpen className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Avg Enrollments</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{avgEnrollments}</h3>
-            </div>
-          </div>
+        <div className="arch-panel p-5">
+          <BookOpen className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Avg Enrollments</p>
+          <p className="text-3xl font-semibold">{avgEnrollments}</p>
         </div>
-      </div>
+      </section>
 
-      {/* Search */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <section className="arch-panel p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search students by name, email, or username..."
+            placeholder="Search students..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+            className="arch-input pl-10"
           />
         </div>
-      </div>
+      </section>
 
-      {/* Students Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <section className="arch-panel overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-            Loading students...
-          </div>
+          <div className="p-10 text-center text-muted-foreground">Loading students...</div>
         ) : filteredStudents.length === 0 ? (
-          <div className="p-12 text-center">
-            <Users className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-            <p className="text-slate-500 dark:text-slate-400">
-              {searchTerm ? "No students found matching your search" : "No students registered yet"}
-            </p>
+          <div className="p-10 text-center text-muted-foreground">
+            {searchTerm ? "No matching students." : "No students registered yet."}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Student
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Enrollments
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Avg Progress
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Last Active
-                  </th>
+              <thead className="border-b border-border">
+                <tr className="text-left">
+                  <th className="px-5 py-3 arch-kicker">Student</th>
+                  <th className="px-5 py-3 arch-kicker">Email</th>
+                  <th className="px-5 py-3 arch-kicker">Enrollments</th>
+                  <th className="px-5 py-3 arch-kicker">Progress</th>
+                  <th className="px-5 py-3 arch-kicker">Last Active</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              <tbody>
                 {filteredStudents.map((student) => (
-                  <tr key={student._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                          {student.name?.charAt(0)?.toUpperCase() || 'S'}
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-900 dark:text-white">{student.name}</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">@{student.username}</p>
-                        </div>
-                      </div>
+                  <tr key={student._id} className="border-b border-border/70 last:border-none">
+                    <td className="px-5 py-4">
+                      <p className="font-medium">{student.name}</p>
+                      <p className="text-xs text-muted-foreground">@{student.username}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                         <Mail className="w-4 h-4" />
-                        <span className="text-sm">{student.email}</span>
-                      </div>
+                        {student.email}
+                      </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                        <span className="font-medium text-slate-900 dark:text-white">{student.enrollmentCount}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-green-500 rounded-full"
-                            style={{ width: `${student.avgProgress}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium text-slate-900 dark:text-white">{student.avgProgress}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                    <td className="px-5 py-4">{student.enrollmentCount}</td>
+                    <td className="px-5 py-4">{student.avgProgress}%</td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        <span className="text-sm">
-                          {new Date(student.lastAccessedAt).toLocaleDateString()}
-                        </span>
-                      </div>
+                        {new Date(student.lastAccessedAt).toLocaleDateString()}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -210,7 +140,7 @@ export default function StudentsPage() {
             </table>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaSave, FaArrowRight, FaArrowLeft } from "react-icons/fa";
 import VideoUploader from "./VideoUploader";
 
 interface CourseFormProps {
@@ -13,24 +12,28 @@ interface CourseFormProps {
 export default function CourseForm({ initialData, isEdit = false }: CourseFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState(initialData || {
-    title: "",
-    description: "",
-    price: 0,
-    category: "",
-    level: "beginner",
-    language: "English",
-    thumbnail: "",
-    requirements: [""],
-    objectives: [""],
-    instructor: {
-      name: "",
-      bio: "",
-    },
-  });
+  const [formData, setFormData] = useState(
+    initialData || {
+      title: "",
+      description: "",
+      price: 0,
+      category: "",
+      level: "beginner",
+      language: "English",
+      thumbnail: "",
+      previewVideoUrl: "",
+      requirements: [""],
+      objectives: [""],
+      instructor: {
+        name: "",
+        bio: "",
+      },
+    }
+  );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
@@ -47,9 +50,9 @@ export default function CourseForm({ initialData, isEdit = false }: CourseFormPr
   };
 
   const handleArrayChange = (index: number, value: string, field: "requirements" | "objectives") => {
-    const newArray = [...formData[field]];
-    newArray[index] = value;
-    setFormData((prev: any) => ({ ...prev, [field]: newArray }));
+    const updated = [...formData[field]];
+    updated[index] = value;
+    setFormData((prev: any) => ({ ...prev, [field]: updated }));
   };
 
   const addArrayItem = (field: "requirements" | "objectives") => {
@@ -57,9 +60,9 @@ export default function CourseForm({ initialData, isEdit = false }: CourseFormPr
   };
 
   const removeArrayItem = (index: number, field: "requirements" | "objectives") => {
-    const newArray = [...formData[field]];
-    newArray.splice(index, 1);
-    setFormData((prev: any) => ({ ...prev, [field]: newArray }));
+    const updated = [...formData[field]];
+    updated.splice(index, 1);
+    setFormData((prev: any) => ({ ...prev, [field]: updated.length ? updated : [""] }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,213 +96,170 @@ export default function CourseForm({ initialData, isEdit = false }: CourseFormPr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-[var(--card-bg)] p-8 rounded-xl border border-[var(--border-color)]">
-      {/* Progress Steps */}
-      <div className="flex justify-between mb-8 border-b border-[var(--border-color)] pb-4">
-        <button
-          type="button"
-          onClick={() => setStep(1)}
-          className={`font-semibold ${step === 1 ? "text-[var(--accent-color)]" : "text-[var(--text-secondary)]"}`}
-        >
-          1. Basic Info
-        </button>
-        <button
-          type="button"
-          onClick={() => setStep(2)}
-          className={`font-semibold ${step === 2 ? "text-[var(--accent-color)]" : "text-[var(--text-secondary)]"}`}
-        >
-          2. Details & Media
-        </button>
-        <button
-          type="button"
-          onClick={() => setStep(3)}
-          className={`font-semibold ${step === 3 ? "text-[var(--accent-color)]" : "text-[var(--text-secondary)]"}`}
-        >
-          3. Curriculum (Later)
+    <form onSubmit={handleSubmit} className="arch-panel p-8 space-y-8">
+      <section className="space-y-4">
+        <p className="arch-kicker">Basic Information</p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className="arch-input"
+            placeholder="Course title"
+            required
+          />
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="arch-input"
+            placeholder="Category"
+          />
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            className="arch-input"
+            min="0"
+            step="0.01"
+            placeholder="Price"
+          />
+          <select name="level" value={formData.level} onChange={handleChange} className="arch-input">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          rows={4}
+          className="arch-input"
+          placeholder="Description"
+          required
+        />
+      </section>
+
+      <section className="space-y-4">
+        <p className="arch-kicker">Media</p>
+        <input
+          type="text"
+          name="thumbnail"
+          value={formData.thumbnail}
+          onChange={handleChange}
+          className="arch-input"
+          placeholder="Thumbnail URL"
+        />
+        <VideoUploader
+          label="Preview Video URL (YouTube/Drive)"
+          value={formData.previewVideoUrl || ""}
+          onChange={(url) => setFormData((prev: any) => ({ ...prev, previewVideoUrl: url }))}
+        />
+      </section>
+
+      <section className="space-y-4">
+        <p className="arch-kicker">Learning Outcomes</p>
+        <ArrayField
+          label="Objectives"
+          values={formData.objectives}
+          field="objectives"
+          onChange={handleArrayChange}
+          onAdd={addArrayItem}
+          onRemove={removeArrayItem}
+        />
+        <ArrayField
+          label="Requirements"
+          values={formData.requirements}
+          field="requirements"
+          onChange={handleArrayChange}
+          onAdd={addArrayItem}
+          onRemove={removeArrayItem}
+        />
+      </section>
+
+      <section className="space-y-4">
+        <p className="arch-kicker">Instructor</p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <input
+            type="text"
+            name="instructor.name"
+            value={formData.instructor.name}
+            onChange={handleChange}
+            className="arch-input"
+            placeholder="Instructor name"
+          />
+          <input
+            type="text"
+            name="language"
+            value={formData.language}
+            onChange={handleChange}
+            className="arch-input"
+            placeholder="Language"
+          />
+        </div>
+        <textarea
+          name="instructor.bio"
+          value={formData.instructor.bio}
+          onChange={handleChange}
+          rows={3}
+          className="arch-input"
+          placeholder="Instructor bio"
+        />
+      </section>
+
+      <div className="flex justify-end">
+        <button type="submit" disabled={loading} className="arch-button">
+          {loading ? "Saving..." : isEdit ? "Update Course" : "Create Course"}
         </button>
       </div>
-
-      {step === 1 && (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Course Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Price ($)</label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end mt-6">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="bg-[var(--accent-color)] text-white px-6 py-2 rounded-lg flex items-center gap-2"
-            >
-              Next <FaArrowRight />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Level</label>
-              <select
-                name="level"
-                value={formData.level}
-                onChange={handleChange}
-                className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Language</label>
-              <input
-                type="text"
-                name="language"
-                value={formData.language}
-                onChange={handleChange}
-                className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Thumbnail URL</label>
-            <input
-              type="text"
-              name="thumbnail"
-              value={formData.thumbnail}
-              onChange={handleChange}
-              className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-              placeholder="https://drive.google.com/uc?export=view&id="
-            />
-          </div>
-
-          <VideoUploader
-            label="Preview Video URL (YouTube/Drive)"
-            value={formData.previewVideoUrl || ""}
-            onChange={(url) => setFormData((prev: any) => ({ ...prev, previewVideoUrl: url }))}
-          />
-
-          <div>
-            <label className="block text-sm font-medium mb-2">What will students learn? (Objectives)</label>
-            {formData.objectives.map((obj: string, index: number) => (
-              <div key={index} className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={obj}
-                  onChange={(e) => handleArrayChange(index, e.target.value, "objectives")}
-                  className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeArrayItem(index, "objectives")}
-                  className="text-red-500 px-2"
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addArrayItem("objectives")}
-              className="text-[var(--accent-color)] text-sm"
-            >
-              + Add Objective
-            </button>
-          </div>
-
-          <div className="flex justify-between mt-6">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="text-[var(--text-secondary)] px-6 py-2 rounded-lg flex items-center gap-2"
-            >
-              <FaArrowLeft /> Back
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(3)}
-              className="bg-[var(--accent-color)] text-white px-6 py-2 rounded-lg flex items-center gap-2"
-            >
-              Next <FaArrowRight />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="space-y-6">
-          <div className="text-center py-12 bg-[var(--bg-primary)] rounded-lg border border-dashed border-[var(--border-color)]">
-            <p className="text-[var(--text-secondary)]">Curriculum management will be implemented in the next phase.</p>
-            <p className="text-sm text-[var(--text-secondary)] mt-2">You can save the course as a draft for now.</p>
-          </div>
-
-          <div className="flex justify-between mt-6">
-             <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="text-[var(--text-secondary)] px-6 py-2 rounded-lg flex items-center gap-2"
-            >
-              <FaArrowLeft /> Back
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg flex items-center gap-2"
-            >
-              {loading ? "Saving..." : <><FaSave /> Save Course</>}
-            </button>
-          </div>
-        </div>
-      )}
     </form>
+  );
+}
+
+function ArrayField({
+  label,
+  values,
+  field,
+  onChange,
+  onAdd,
+  onRemove,
+}: {
+  label: string;
+  values: string[];
+  field: "requirements" | "objectives";
+  onChange: (index: number, value: string, field: "requirements" | "objectives") => void;
+  onAdd: (field: "requirements" | "objectives") => void;
+  onRemove: (index: number, field: "requirements" | "objectives") => void;
+}) {
+  return (
+    <div>
+      <label className="block text-sm text-muted-foreground mb-2">{label}</label>
+      <div className="space-y-2">
+        {values.map((value, index) => (
+          <div key={`${field}-${index}`} className="flex gap-2">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => onChange(index, e.target.value, field)}
+              className="arch-input"
+            />
+            <button
+              type="button"
+              onClick={() => onRemove(index, field)}
+              className="arch-button-secondary !px-3"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => onAdd(field)} className="mt-2 text-sm text-primary hover:underline">
+        + Add {label.slice(0, -1)}
+      </button>
+    </div>
   );
 }

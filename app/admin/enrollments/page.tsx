@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { GraduationCap, Search, User, BookOpen, TrendingUp, Calendar, CheckCircle, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, Calendar, GraduationCap, Search, TrendingUp } from "lucide-react";
 
 interface Enrollment {
   _id: string;
@@ -37,173 +37,98 @@ export default function EnrollmentsPage() {
     }
   };
 
-  const filteredEnrollments = enrollments.filter(enrollment =>
-    enrollment.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    enrollment.studentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    enrollment.courseTitle?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEnrollments = enrollments.filter(
+    (enrollment) =>
+      enrollment.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      enrollment.studentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      enrollment.courseTitle?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalEnrollments = enrollments.length;
-  const activeEnrollments = enrollments.filter(e => 
-    new Date(e.lastAccessedAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+  const activeEnrollments = enrollments.filter(
+    (e) => new Date(e.lastAccessedAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
   ).length;
-  const completedEnrollments = enrollments.filter(e => e.progress >= 100).length;
+  const completedEnrollments = enrollments.filter((e) => e.progress >= 100).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Gradient Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-600 rounded-3xl p-8 shadow-2xl">
-        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-              <GraduationCap className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black text-white">Enrollments</h1>
-              <p className="text-white/80 text-lg mt-1">
-                Monitor and manage all course enrollments
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <section className="arch-panel p-8">
+        <p className="arch-kicker mb-3">Learning Activity</p>
+        <h1 className="arch-heading-md">Enrollments</h1>
+        <p className="text-muted-foreground mt-2">
+          Observe course participation and completion.
+        </p>
+      </section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Enrollments</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{totalEnrollments}</h3>
-            </div>
-          </div>
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="arch-panel p-5">
+          <GraduationCap className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Total Enrollments</p>
+          <p className="text-2xl font-semibold">{totalEnrollments}</p>
         </div>
-
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Active (7 days)</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{activeEnrollments}</h3>
-            </div>
-          </div>
+        <div className="arch-panel p-5">
+          <TrendingUp className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Active (7 days)</p>
+          <p className="text-2xl font-semibold">{activeEnrollments}</p>
         </div>
-
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <CheckCircle className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Completed</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{completedEnrollments}</h3>
-            </div>
-          </div>
+        <div className="arch-panel p-5">
+          <BookOpen className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Completed</p>
+          <p className="text-2xl font-semibold">{completedEnrollments}</p>
         </div>
-      </div>
+      </section>
 
-      {/* Search */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <section className="arch-panel p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search enrollments by student or course..."
+            placeholder="Search enrollments..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+            className="arch-input pl-10"
           />
         </div>
-      </div>
+      </section>
 
-      {/* Enrollments Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <section className="arch-panel overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            <p className="mt-4">Loading enrollments...</p>
-          </div>
+          <div className="p-10 text-center text-muted-foreground">Loading enrollments...</div>
         ) : filteredEnrollments.length === 0 ? (
-          <div className="p-12 text-center">
-            <GraduationCap className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-            <p className="text-slate-500 dark:text-slate-400">
-              {searchTerm ? "No enrollments found matching your search" : "No enrollments yet"}
-            </p>
+          <div className="p-10 text-center text-muted-foreground">
+            {searchTerm ? "No matching enrollments." : "No enrollments yet."}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Student
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Course
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Progress
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Lessons
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Enrolled
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
-                    Last Active
-                  </th>
+              <thead className="border-b border-border">
+                <tr className="text-left">
+                  <th className="px-5 py-3 arch-kicker">Student</th>
+                  <th className="px-5 py-3 arch-kicker">Course</th>
+                  <th className="px-5 py-3 arch-kicker">Progress</th>
+                  <th className="px-5 py-3 arch-kicker">Lessons</th>
+                  <th className="px-5 py-3 arch-kicker">Enrolled</th>
+                  <th className="px-5 py-3 arch-kicker">Last Active</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              <tbody>
                 {filteredEnrollments.map((enrollment) => (
-                  <tr key={enrollment._id} className="hover:bg-gradient-to-r hover:from-indigo-50/50 hover:to-purple-50/50 dark:hover:from-indigo-900/10 dark:hover:to-purple-900/10 transition-all duration-200">
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium text-slate-900 dark:text-white">{enrollment.studentName || 'Unknown'}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{enrollment.studentEmail}</p>
-                      </div>
+                  <tr key={enrollment._id} className="border-b border-border/70 last:border-none">
+                    <td className="px-5 py-4">
+                      <p className="font-medium">{enrollment.studentName || "Unknown"}</p>
+                      <p className="text-xs text-muted-foreground">{enrollment.studentEmail}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                        <span className="font-medium text-slate-900 dark:text-white">{enrollment.courseTitle}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
-                            style={{ width: `${enrollment.progress || 0}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium text-slate-900 dark:text-white">{enrollment.progress || 0}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
-                        {enrollment.completedLessons} completed
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                    <td className="px-5 py-4">{enrollment.courseTitle}</td>
+                    <td className="px-5 py-4">{enrollment.progress || 0}%</td>
+                    <td className="px-5 py-4">{enrollment.completedLessons} completed</td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        <span className="text-sm">
-                          {new Date(enrollment.enrolledAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {new Date(enrollment.lastAccessedAt).toLocaleDateString()}
+                        {new Date(enrollment.enrolledAt).toLocaleDateString()}
                       </span>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-muted-foreground">
+                      {new Date(enrollment.lastAccessedAt).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
@@ -211,7 +136,7 @@ export default function EnrollmentsPage() {
             </table>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

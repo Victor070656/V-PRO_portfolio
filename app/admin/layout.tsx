@@ -14,7 +14,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white min-h-screen flex">
+    <div className="arch-shell flex">
       <AdminAuthGuard>
         <Sidebar />
       </AdminAuthGuard>

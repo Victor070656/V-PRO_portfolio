@@ -79,7 +79,7 @@ export default function LessonContent({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto bg-white dark:bg-slate-950">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto bg-background">
       {/* Video Player Container */}
       <div className="w-full bg-black shrink-0 relative">
         {lesson.videoUrl ? (
@@ -101,7 +101,7 @@ export default function LessonContent({
       {/* Lesson Details */}
       <div className="max-w-4xl mx-auto w-full p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             {lesson.title}
           </h1>
           <button
@@ -109,8 +109,8 @@ export default function LessonContent({
             disabled={isCompleted}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
               isCompleted
-                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 cursor-default"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
+                ? "bg-secondary text-foreground cursor-default border border-border"
+                : "bg-primary text-primary-foreground hover:bg-blue-500"
             }`}
           >
             {isCompleted ? (
@@ -124,14 +124,14 @@ export default function LessonContent({
           </button>
         </div>
 
-        <div className="prose dark:prose-invert max-w-none mb-8">
+        <div className="max-w-none mb-8 text-muted-foreground">
           <p>{lesson.description}</p>
         </div>
 
         {/* Resources */}
         {lesson.resources && lesson.resources.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Resources
             </h3>
             <div className="grid gap-3">
@@ -141,14 +141,14 @@ export default function LessonContent({
                   href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors"
                 >
                   {resource.type === "pdf" ? (
-                    <FileText className="w-5 h-5 text-red-500" />
+                    <FileText className="w-5 h-5 text-primary" />
                   ) : (
-                    <Download className="w-5 h-5 text-blue-500" />
+                    <Download className="w-5 h-5 text-primary" />
                   )}
-                  <span className="text-slate-700 dark:text-slate-300 font-medium">
+                  <span className="text-foreground font-medium">
                     {resource.title}
                   </span>
                 </a>
@@ -158,11 +158,11 @@ export default function LessonContent({
         )}
 
         {/* Navigation */}
-        <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between pt-6 border-t border-border">
           {prevLessonId ? (
             <Link
               href={`/courses/${courseId}/learn?lessonId=${prevLessonId}`}
-              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
+              className="flex items-center gap-2 text-muted-foreground hover:text-primary font-medium"
             >
               <ChevronLeft className="w-5 h-5" />
               Previous Lesson
@@ -174,7 +174,7 @@ export default function LessonContent({
           {nextLessonId ? (
             <Link
               href={`/courses/${courseId}/learn?lessonId=${nextLessonId}`}
-              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
+              className="flex items-center gap-2 text-muted-foreground hover:text-primary font-medium"
             >
               Next Lesson
               <ChevronRight className="w-5 h-5" />
@@ -182,7 +182,7 @@ export default function LessonContent({
           ) : (
             <Link
               href={`/courses/${courseId}`}
-              className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
+              className="flex items-center gap-2 text-muted-foreground hover:text-primary font-medium"
             >
               Back to Course Home
               <ChevronRight className="w-5 h-5" />

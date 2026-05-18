@@ -2,8 +2,19 @@
 
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, FolderKanban, ExternalLink, Star, Loader2, X, Search, Filter } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Edit,
+  ExternalLink,
+  Filter,
+  FolderKanban,
+  Loader2,
+  Plus,
+  Search,
+  Star,
+  Trash2,
+  X,
+} from "lucide-react";
 
 interface Project {
   _id: string;
@@ -20,7 +31,7 @@ interface Project {
 }
 
 export default function AdminProjectsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -35,16 +46,12 @@ export default function AdminProjectsPage() {
     description: "",
     technologies: "",
     category: "Project",
-    featured: false
+    featured: false,
   });
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      redirect("/signin");
-    }
-    if (status === "authenticated") {
-      fetchProjects();
-    }
+    if (status === "unauthenticated") redirect("/signin");
+    if (status === "authenticated") fetchProjects();
   }, [status]);
 
   const fetchProjects = async () => {
@@ -66,15 +73,16 @@ export default function AdminProjectsPage() {
     try {
       const projectData = {
         ...formData,
-        technologies: formData.technologies.split(",").map(tech => tech.trim()).filter(Boolean),
-        ...(editingProject && { id: editingProject._id })
+        technologies: formData.technologies
+          .split(",")
+          .map((tech) => tech.trim())
+          .filter(Boolean),
+        ...(editingProject && { id: editingProject._id }),
       };
 
       const response = await fetch("/api/projects", {
         method: editingProject ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(projectData),
       });
 
@@ -104,22 +112,17 @@ export default function AdminProjectsPage() {
       description: project.description,
       technologies: project.technologies.join(", "),
       category: project.category,
-      featured: project.featured
+      featured: project.featured,
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
-
     try {
-      const response = await fetch(`/api/projects?id=${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        await fetchProjects();
-      } else {
+      const response = await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
+      if (response.ok) await fetchProjects();
+      else {
         const error = await response.json();
         alert(error.message || "Error deleting project");
       }
@@ -138,124 +141,71 @@ export default function AdminProjectsPage() {
       description: "",
       technologies: "",
       category: "Project",
-      featured: false
+      featured: false,
     });
     setEditingProject(null);
   };
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredProjects = projects.filter((project) => {
+    const matchesSearch =
+      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === "all" || project.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
-  const featuredCount = projects.filter(p => p.featured).length;
-  const liveCount = projects.filter(p => p.status === "Live").length;
+  const featuredCount = projects.filter((p) => p.featured).length;
+  const liveCount = projects.filter((p) => p.status === "Live").length;
 
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (status === "unauthenticated") {
-    return null;
-  }
+  if (status === "unauthenticated") return null;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Gradient Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-600 rounded-3xl p-8 shadow-2xl">
-        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <FolderKanban className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-black text-white">Projects</h1>
-                <p className="text-white/80 text-lg mt-1">
-                  Manage and showcase your portfolio projects
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="group bg-white hover:bg-white/90 text-violet-600 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105 flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-              Add Project
-            </button>
+    <div className="space-y-6">
+      <section className="arch-panel p-8">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="arch-kicker mb-3">Portfolio Admin</p>
+            <h1 className="arch-heading-md">Projects</h1>
+            <p className="text-muted-foreground mt-2">Manage portfolio entries and publication status.</p>
           </div>
+          <button onClick={() => setShowForm(true)} className="arch-button">
+            <Plus className="w-4 h-4" />
+            Add Project
+          </button>
         </div>
-      </div>
+      </section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <FolderKanban className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Projects</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">{projects.length}</h3>
-            </div>
-          </div>
-        </div>
+      <section className="grid gap-4 md:grid-cols-3">
+        <Metric label="Total Projects" value={projects.length.toString()} />
+        <Metric label="Live Projects" value={liveCount.toString()} />
+        <Metric label="Featured" value={featuredCount.toString()} />
+      </section>
 
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <ExternalLink className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Live Projects</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{liveCount}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <Star className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Featured</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">{featuredCount}</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <section className="grid gap-4 md:grid-cols-[1fr_auto]">
+        <div className="arch-panel p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search projects..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+              className="arch-input pl-10"
             />
           </div>
         </div>
-
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="arch-panel p-4">
           <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-slate-400" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-            >
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="arch-input py-2">
               <option value="all">All Status</option>
               <option value="Live">Live</option>
               <option value="Development">Development</option>
@@ -263,256 +213,119 @@ export default function AdminProjectsPage() {
             </select>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-violet-500 to-purple-600 p-6 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">
-                {editingProject ? "Edit Project" : "Add New Project"}
-              </h2>
+      {showForm ? (
+        <section className="arch-panel p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="arch-heading-md">{editingProject ? "Edit Project" : "Add New Project"}</h2>
+            <button
+              onClick={() => {
+                setShowForm(false);
+                resetForm();
+              }}
+              className="arch-button-secondary !px-3 !py-2"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+            <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="arch-input" placeholder="Project Name" required />
+            <input type="url" value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} className="arch-input" placeholder="Image URL" required />
+            <input type="url" value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} className="arch-input" placeholder="Project Link" required />
+            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="arch-input" required>
+              <option value="Development">Development</option>
+              <option value="Live">Live</option>
+              <option value="Maintenance">Maintenance</option>
+            </select>
+            <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="arch-input">
+              <option value="Project">Project</option>
+              <option value="Full-stack">Full-stack</option>
+              <option value="Frontend">Frontend</option>
+              <option value="Backend">Backend</option>
+            </select>
+            <input type="text" value={formData.technologies} onChange={(e) => setFormData({ ...formData, technologies: e.target.value })} className="arch-input" placeholder="Technologies (comma-separated)" />
+            <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="arch-input md:col-span-2" rows={4} placeholder="Description" required />
+            <label className="inline-flex items-center gap-2 text-sm text-muted-foreground md:col-span-2">
+              <input type="checkbox" checked={formData.featured} onChange={(e) => setFormData({ ...formData, featured: e.target.checked })} />
+              Featured Project
+            </label>
+            <div className="md:col-span-2 flex gap-2">
+              <button type="submit" disabled={isLoading} className="arch-button">
+                {isLoading ? "Saving..." : editingProject ? "Update Project" : "Add Project"}
+              </button>
               <button
+                type="button"
                 onClick={() => {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="arch-button-secondary"
               >
-                <X className="w-6 h-6 text-white" />
+                Cancel
               </button>
             </div>
-            
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Project Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Image URL *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Project Link *
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.link}
-                    onChange={(e) => setFormData({...formData, link: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Status *
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({...formData, status: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-                    required
-                  >
-                    <option value="Development">Development</option>
-                    <option value="Live">Live</option>
-                    <option value="Maintenance">Maintenance</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Category
-                  </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-                  >
-                    <option value="Project">Project</option>
-                    <option value="Full-stack">Full-stack</option>
-                    <option value="Frontend">Frontend</option>
-                    <option value="Backend">Backend</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Technologies (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.technologies}
-                    onChange={(e) => setFormData({...formData, technologies: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-                    placeholder="React, Node.js, MongoDB"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Description *
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
-                    rows={4}
-                    required
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.featured}
-                      onChange={(e) => setFormData({...formData, featured: e.target.checked})}
-                      className="w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-2 focus:ring-violet-500"
-                    />
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Featured Project</span>
-                  </label>
-                </div>
-              </div>
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    editingProject ? "Update Project" : "Add Project"
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    resetForm();
-                  }}
-                  className="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          </form>
+        </section>
+      ) : null}
 
-      {/* Projects Grid */}
       {isLoading ? (
-        <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-          <p className="mt-4">Loading projects...</p>
-        </div>
+        <div className="arch-panel p-10 text-center text-muted-foreground">Loading projects...</div>
       ) : filteredProjects.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-          <FolderKanban className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-          <p className="text-slate-500 dark:text-slate-400 mb-4">
-            {searchTerm ? "No projects found matching your search" : "No projects yet"}
+        <div className="arch-panel p-10 text-center">
+          <FolderKanban className="w-10 h-10 text-primary mx-auto mb-3" />
+          <p className="text-muted-foreground">
+            {searchTerm ? "No projects found matching your search." : "No projects yet."}
           </p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 text-violet-600 dark:text-violet-400 hover:underline font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Create your first project
-          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
-            <div
-              key={project._id}
-              className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-            >
-              {/* Project Image */}
-              <div className="relative h-48 bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 overflow-hidden">
-                <img
-                  src={project.imageUrl}
-                  alt={project.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                {project.featured && (
-                  <div className="absolute top-3 left-3 px-3 py-1 bg-yellow-500 text-white text-xs font-semibold rounded-full shadow-lg flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-current" />
+            <article key={project._id} className="arch-panel overflow-hidden">
+              <div className="h-40 bg-muted relative">
+                <img src={project.imageUrl} alt={project.name} className="w-full h-full object-cover" />
+                {project.featured ? (
+                  <div className="absolute top-2 left-2 arch-chip bg-primary text-primary-foreground border-primary">
+                    <Star className="w-3 h-3 mr-1" />
                     Featured
                   </div>
-                )}
-                <div className={`absolute top-3 right-3 px-3 py-1 text-xs font-semibold rounded-full shadow-lg ${
-                  project.status === "Live" ? "bg-green-500 text-white" :
-                  project.status === "Development" ? "bg-yellow-500 text-white" :
-                  "bg-blue-500 text-white"
-                }`}>
-                  {project.status}
-                </div>
+                ) : null}
+                <div className="absolute top-2 right-2 arch-chip">{project.status}</div>
               </div>
-
-              {/* Project Info */}
-              <div className="p-6">
-                <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2 line-clamp-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                  {project.name}
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
-                  {project.description}
-                </p>
-
-                {/* Technologies */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.technologies.slice(0, 3).map((tech, index) => (
-                    <span key={index} className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-semibold rounded-full">
-                      {tech}
-                    </span>
+              <div className="p-5">
+                <h3 className="font-semibold line-clamp-1">{project.name}</h3>
+                <p className="text-sm text-muted-foreground line-clamp-2 mt-2 mb-3">{project.description}</p>
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {project.technologies.slice(0, 3).map((tech, idx) => (
+                    <span key={idx} className="arch-chip">{tech}</span>
                   ))}
-                  {project.technologies.length > 3 && (
-                    <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold rounded-full">
-                      +{project.technologies.length - 3}
-                    </span>
-                  )}
                 </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(project)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-violet-100 dark:hover:bg-violet-900/20 text-slate-700 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 rounded-xl transition-all duration-200 font-medium"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Edit
+                <div className="grid grid-cols-3 gap-2">
+                  <button onClick={() => handleEdit(project)} className="arch-button-secondary !px-2 !py-2 text-xs">
+                    <Edit className="w-3 h-3" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(project._id)}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-200"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
+                  <a href={project.link} target="_blank" rel="noopener noreferrer" className="arch-button-secondary !px-2 !py-2 text-xs">
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <button onClick={() => handleDelete(project._id)} className="arch-button-secondary !px-2 !py-2 text-xs text-red-300 border-red-500/40">
+                    <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
-        </div>
+        </section>
       )}
     </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="arch-panel p-5">
+      <p className="arch-kicker">{label}</p>
+      <p className="text-2xl font-semibold">{value}</p>
+    </article>
   );
 }

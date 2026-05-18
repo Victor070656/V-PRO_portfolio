@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import ProjectCard from "./ProjectCard";
-import { Search, Filter, Grid3x3, List, Loader2 } from "lucide-react";
+import { Filter, Grid3x3, List, Search } from "lucide-react";
 
 interface Project {
   _id: string;
@@ -32,7 +32,24 @@ export default function ProjectsGrid() {
   }, []);
 
   useEffect(() => {
-    filterProjects();
+    let filtered = projects;
+
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (project) =>
+          project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.technologies.some((tech) =>
+            tech.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+      );
+    }
+
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((project) => project.category === selectedCategory);
+    }
+
+    setFilteredProjects(filtered);
   }, [projects, searchQuery, selectedCategory]);
 
   const fetchProjects = async () => {
@@ -55,188 +72,100 @@ export default function ProjectsGrid() {
     }
   };
 
-  const filterProjects = () => {
-    let filtered = projects;
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (project) =>
-          project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          project.description
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          project.technologies.some((tech) =>
-            tech.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-      );
-    }
-
-    // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(
-        (project) => project.category === selectedCategory
-      );
-    }
-
-    setFilteredProjects(filtered);
-  };
-
   const categories = [
     "all",
     ...new Set(projects.map((p) => p.category).filter(Boolean)),
   ];
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState error={error} onRetry={fetchProjects} />;
+  if (projects.length === 0) return <EmptyState />;
 
-  if (error) {
-    return <ErrorState error={error} onRetry={fetchProjects} />;
-  }
-
-  if (projects.length === 0) {
-    return <EmptyState />;
-  }
-
-  const featuredProjects = filteredProjects.filter(
-    (project) => project.featured
-  );
-  const regularProjects = filteredProjects.filter(
-    (project) => !project.featured
-  );
+  const featuredProjects = filteredProjects.filter((project) => project.featured);
+  const regularProjects = filteredProjects.filter((project) => !project.featured);
 
   return (
-    <div className="space-y-12">
-      {/* Search & Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 border border-slate-200 dark:border-slate-800">
-        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-          {/* Search */}
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search projects, technologies..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder:text-slate-400"
-            />
-          </div>
+    <div className="space-y-8">
+      <section className="arch-panel p-6 space-y-5">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search projects or technologies..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="arch-input pl-11"
+          />
+        </div>
 
-          {/* Category Filter */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <Filter className="w-5 h-5 text-slate-400" />
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                className={
                   selectedCategory === category
-                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-105"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
+                    ? "arch-button !px-4 !py-2"
+                    : "arch-button-secondary !px-4 !py-2"
+                }
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </button>
             ))}
           </div>
 
-          {/* View Toggle */}
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+          <div className="flex items-center rounded border border-border bg-muted p-1">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === "grid"
-                  ? "bg-white dark:bg-slate-700 shadow-md"
-                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              }`}
+              className={`rounded p-2 ${viewMode === "grid" ? "bg-card text-foreground" : "text-muted-foreground"}`}
             >
-              <Grid3x3 className="w-5 h-5" />
+              <Grid3x3 className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-lg transition-all ${
-                viewMode === "list"
-                  ? "bg-white dark:bg-slate-700 shadow-md"
-                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              }`}
+              className={`rounded p-2 ${viewMode === "list" ? "bg-card text-foreground" : "text-muted-foreground"}`}
             >
-              <List className="w-5 h-5" />
+              <List className="h-4 w-4" />
             </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Results Count */}
-      {filteredProjects.length > 0 && (
-        <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {filteredProjects.length}{" "}
-            {filteredProjects.length === 1 ? "Project" : "Projects"} Found
-          </h3>
-        </div>
-      )}
-
-      {/* Featured Projects */}
       {featuredProjects.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-2 h-8 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full"></div>
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Featured Projects
-            </h3>
-          </div>
+        <section className="space-y-4">
+          <h3 className="arch-heading-md">Featured</h3>
           <div
             className={
               viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                : "flex flex-col gap-6"
+                ? "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+                : "space-y-4"
             }
           >
-            {featuredProjects.map((project, index) => (
-              <div
-                key={project._id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <ProjectCard project={project} viewMode={viewMode} featured />
-              </div>
+            {featuredProjects.map((project) => (
+              <ProjectCard key={project._id} project={project} viewMode={viewMode} featured />
             ))}
           </div>
         </section>
       )}
 
-      {/* Regular Projects */}
-      {regularProjects.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-2 h-8 bg-gradient-to-b from-purple-600 to-pink-600 rounded-full"></div>
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white">
-              {featuredProjects.length > 0 ? "Other Projects" : "My Projects"}
-            </h3>
-          </div>
+      {regularProjects.length > 0 ? (
+        <section className="space-y-4">
+          <h3 className="arch-heading-md">{featuredProjects.length ? "All Projects" : "Projects"}</h3>
           <div
             className={
               viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                : "flex flex-col gap-6"
+                ? "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+                : "space-y-4"
             }
           >
-            {regularProjects.map((project, index) => (
-              <div
-                key={project._id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <ProjectCard project={project} viewMode={viewMode} />
-              </div>
+            {regularProjects.map((project) => (
+              <ProjectCard key={project._id} project={project} viewMode={viewMode} />
             ))}
           </div>
         </section>
-      )}
-
-      {/* No Results */}
-      {filteredProjects.length === 0 && (
+      ) : (
         <NoResultsState
           searchQuery={searchQuery}
           onClearFilters={() => {
@@ -249,111 +178,38 @@ export default function ProjectsGrid() {
   );
 }
 
-// Loading State Component
 function LoadingState() {
   return (
-    <div className="space-y-8">
-      <div className="text-center py-20">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mb-4">
-          <Loader2 className="w-8 h-8 text-indigo-600 dark:text-indigo-400 animate-spin" />
-        </div>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-          Loading projects...
-        </h3>
-        <p className="text-slate-600 dark:text-slate-400">
-          Please wait while we fetch the latest projects
-        </p>
-      </div>
-
-      {/* Skeleton Loaders */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-pulse"
-          >
-            <div className="h-48 bg-slate-200 dark:bg-slate-800"></div>
-            <div className="p-6 space-y-4">
-              <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
-              <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2"></div>
-              <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="arch-panel py-20 text-center">
+      <h3 className="arch-heading-md">Loading projects...</h3>
+      <p className="mt-2 text-muted-foreground">Fetching latest work.</p>
     </div>
   );
 }
 
-// Error State Component
-function ErrorState({
-  error,
-  onRetry,
-}: {
-  error: string;
-  onRetry: () => void;
-}) {
+function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <div className="text-center py-20">
-      <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full mb-6">
-        <svg
-          className="w-10 h-10 text-red-600 dark:text-red-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-      </div>
-      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-        Oops! Something went wrong
-      </h3>
-      <p className="text-slate-600 dark:text-slate-400 mb-6">{error}</p>
-      <button
-        onClick={onRetry}
-        className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-      >
+    <div className="arch-panel py-20 text-center">
+      <h3 className="arch-heading-md">Could not load projects</h3>
+      <p className="mt-2 text-muted-foreground">{error}</p>
+      <button onClick={onRetry} className="arch-button mt-6">
         Try Again
       </button>
     </div>
   );
 }
 
-// Empty State Component
 function EmptyState() {
   return (
-    <div className="text-center py-20">
-      <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full mb-6">
-        <svg
-          className="w-10 h-10 text-slate-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-          />
-        </svg>
-      </div>
-      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-        No Projects Yet
-      </h3>
-      <p className="text-slate-600 dark:text-slate-400">
-        Projects will appear here once they're added to the portfolio.
+    <div className="arch-panel py-20 text-center">
+      <h3 className="arch-heading-md">No projects yet</h3>
+      <p className="mt-2 text-muted-foreground">
+        Projects will appear once they are published.
       </p>
     </div>
   );
 }
 
-// No Results State
 function NoResultsState({
   searchQuery,
   onClearFilters,
@@ -362,22 +218,12 @@ function NoResultsState({
   onClearFilters: () => void;
 }) {
   return (
-    <div className="text-center py-20">
-      <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full mb-6">
-        <Search className="w-10 h-10 text-slate-400" />
-      </div>
-      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-        No projects found
-      </h3>
-      <p className="text-slate-600 dark:text-slate-400 mb-6">
-        {searchQuery
-          ? `We couldn't find any projects matching "${searchQuery}"`
-          : "No projects match the selected filters"}
+    <div className="arch-panel py-20 text-center">
+      <h3 className="arch-heading-md">No matching projects</h3>
+      <p className="mt-2 text-muted-foreground">
+        {searchQuery ? `No results for "${searchQuery}".` : "Adjust filters and try again."}
       </p>
-      <button
-        onClick={onClearFilters}
-        className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-6 py-3 rounded-xl font-semibold border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300"
-      >
+      <button onClick={onClearFilters} className="arch-button-secondary mt-6">
         Clear Filters
       </button>
     </div>

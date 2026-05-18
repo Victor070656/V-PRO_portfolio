@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Search, BookOpen, Eye, DollarSign, Calendar, Loader2 } from "lucide-react";
+import { BookOpen, Calendar, Edit, Eye, Loader2, Plus, Search, Trash2 } from "lucide-react";
 
 interface Course {
   _id: string;
@@ -42,9 +42,7 @@ export default function AdminCoursesPage() {
     if (!confirm("Are you sure you want to delete this course?")) return;
 
     try {
-      const res = await fetch(`/api/admin/courses/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/admin/courses/${id}`, { method: "DELETE" });
       if (res.ok) {
         setCourses(courses.filter((c) => c._id !== id));
       } else {
@@ -59,20 +57,16 @@ export default function AdminCoursesPage() {
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
     setTogglingId(id);
-    
+
     try {
       const res = await fetch(`/api/admin/courses/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPublished: newStatus }),
       });
-      
+
       if (res.ok) {
-        setCourses(courses.map(c => 
-          c._id === id ? { ...c, isPublished: newStatus } : c
-        ));
+        setCourses(courses.map((c) => (c._id === id ? { ...c, isPublished: newStatus } : c)));
       } else {
         alert("Failed to update course status");
       }
@@ -84,220 +78,125 @@ export default function AdminCoursesPage() {
     }
   };
 
-  const filteredCourses = courses.filter(course => 
+  const filteredCourses = courses.filter((course) =>
     course?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const publishedCount = courses.filter(c => c.isPublished).length;
-  const draftCount = courses.filter(c => !c.isPublished).length;
-  const totalRevenue = courses.reduce((sum, c) => sum + (c.price || 0), 0);
+  const publishedCount = courses.filter((c) => c.isPublished).length;
+  const draftCount = courses.filter((c) => !c.isPublished).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Gradient Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 rounded-3xl p-8 shadow-2xl">
-        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,transparent,black)]" />
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                <BookOpen className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-black text-white">Courses</h1>
-                <p className="text-white/80 text-lg mt-1">
-                  Manage and organize all your courses
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/admin/courses/create"
-              className="group bg-white hover:bg-white/90 text-orange-600 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105 flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-              Create Course
-            </Link>
+    <div className="space-y-6">
+      <section className="arch-panel p-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="arch-kicker mb-3">Course Management</p>
+            <h1 className="arch-heading-md">Courses</h1>
+            <p className="text-muted-foreground mt-2">
+              Create, publish, and maintain learning content.
+            </p>
           </div>
+          <Link href="/admin/courses/create" className="arch-button">
+            <Plus className="w-4 h-4" />
+            Create Course
+          </Link>
         </div>
-      </div>
+      </section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <BookOpen className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Total Courses</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">{courses.length}</h3>
-            </div>
-          </div>
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="arch-panel p-5">
+          <BookOpen className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Total</p>
+          <p className="text-3xl font-semibold">{courses.length}</p>
         </div>
-
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <Eye className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Published</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{publishedCount}</h3>
-            </div>
-          </div>
+        <div className="arch-panel p-5">
+          <Eye className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Published</p>
+          <p className="text-3xl font-semibold">{publishedCount}</p>
         </div>
-
-        <div className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <DollarSign className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Drafts</p>
-              <h3 className="text-3xl font-black bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">{draftCount}</h3>
-            </div>
-          </div>
+        <div className="arch-panel p-5">
+          <Edit className="h-5 w-5 text-primary mb-2" />
+          <p className="arch-kicker">Drafts</p>
+          <p className="text-3xl font-semibold">{draftCount}</p>
         </div>
-      </div>
+      </section>
 
-      {/* Search */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <section className="arch-panel p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search courses..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-900 dark:text-white"
+            className="arch-input pl-10"
           />
         </div>
-      </div>
+      </section>
 
-      {/* Courses Grid */}
       {loading ? (
-        <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-          <p className="mt-4">Loading courses...</p>
+        <div className="arch-panel p-10 text-center text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+          Loading courses...
         </div>
       ) : filteredCourses.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-          <BookOpen className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-          <p className="text-slate-500 dark:text-slate-400 mb-4">
-            {searchTerm ? "No courses found matching your search" : "No courses yet"}
-          </p>
-          <Link
-            href="/admin/courses/create"
-            className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:underline font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Create your first course
-          </Link>
+        <div className="arch-panel p-10 text-center text-muted-foreground">
+          {searchTerm ? "No courses match your search." : "No courses yet."}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredCourses.map((course) => (
-            <div
-              key={course._id}
-              className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-            >
-              {/* Course Thumbnail */}
-              <div className="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/20 dark:to-red-900/20 overflow-hidden">
+            <article key={course._id} className="arch-panel overflow-hidden">
+              <div className="h-40 bg-muted">
                 {course.thumbnail ? (
-                  <img 
-                    src={course.thumbnail} 
-                    alt={course.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <BookOpen className="w-16 h-16 text-orange-300 dark:text-orange-700" />
-                  </div>
-                )}
+                  <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover" />
+                ) : null}
               </div>
-
-              {/* Course Info */}
-              <div className="p-6">
-                {/* Status Toggle */}
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-lg text-slate-900 dark:text-white line-clamp-1 flex-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                    {course.title}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium ${course.isPublished ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
-                      {course.isPublished ? 'Published' : 'Draft'}
-                    </span>
-                    <button
-                      onClick={() => handleToggleStatus(course._id, course.isPublished)}
-                      disabled={togglingId === course._id}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                        course.isPublished
-                          ? 'bg-green-500'
-                          : 'bg-slate-300 dark:bg-slate-600'
-                      } ${togglingId === course._id ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}`}
-                      title={togglingId === course._id ? 'Updating...' : `Toggle to ${course.isPublished ? 'draft' : 'publish'}`}
-                    >
-                      {togglingId === course._id ? (
-                        <Loader2 className="w-4 h-4 text-white animate-spin mx-auto" />
-                      ) : (
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                            course.isPublished ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      )}
-                    </button>
-                  </div>
+              <div className="p-5 space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="font-semibold line-clamp-2">{course.title}</h3>
+                  <button
+                    onClick={() => handleToggleStatus(course._id, course.isPublished)}
+                    disabled={togglingId === course._id}
+                    className={`rounded px-2 py-1 text-xs border ${
+                      course.isPublished
+                        ? "border-green-500/40 text-green-300"
+                        : "border-yellow-500/40 text-yellow-300"
+                    }`}
+                  >
+                    {togglingId === course._id
+                      ? "..."
+                      : course.isPublished
+                        ? "Published"
+                        : "Draft"}
+                  </button>
                 </div>
-                
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
-                  {course.description || "No description available"}
-                </p>
-                
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    <span className="font-bold text-lg text-slate-900 dark:text-white">
-                      ${course.price || 0}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+                <div className="flex items-center justify-between text-sm">
+                  <span>${course.price || 0}</span>
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
                     <Calendar className="w-3 h-3" />
                     {new Date(course.createdAt).toLocaleDateString()}
-                  </div>
+                  </span>
                 </div>
-
-                {/* Actions */}
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/admin/courses/${course._id}/lessons`}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all duration-200 font-medium"
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      Lessons
-                    </Link>
-                    <Link
-                      href={`/admin/courses/${course._id}/edit`}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-slate-700 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-xl transition-all duration-200 font-medium"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit
-                    </Link>
-                  </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Link href={`/admin/courses/${course._id}/lessons`} className="arch-button-secondary !px-2 !py-2 text-xs">
+                    Lessons
+                  </Link>
+                  <Link href={`/admin/courses/${course._id}/edit`} className="arch-button-secondary !px-2 !py-2 text-xs">
+                    Edit
+                  </Link>
                   <button
                     onClick={() => handleDelete(course._id)}
-                    className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-                    title="Delete"
+                    className="arch-button-secondary !px-2 !py-2 text-xs text-red-300 border-red-500/40 hover:border-red-300"
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
+                    <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
-        </div>
+        </section>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 import { Course } from "@/lib/models/course";
-import { Clock, Users, Star, BookOpen, ArrowRight } from "lucide-react";
+import { ArrowRight, Clock, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -15,125 +15,73 @@ export default function CourseCard({
 }: CourseCardProps) {
   if (viewMode === "list") {
     return (
-      <Link href={`/courses/${course._id}`}>
-        <div className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 hover:shadow-2xl flex flex-col md:flex-row">
-          {/* Image */}
-          <div className="relative md:w-80 h-48 md:h-auto overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600">
-            {course.thumbnail ? (
-              <Image
-                src={course.thumbnail}
-                alt={course.title}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <BookOpen className="w-16 h-16 text-white/50" />
+      <Link href={`/courses/${course._id}`} className="block">
+        <article className="arch-panel overflow-hidden transition-colors hover:border-primary">
+          <div className="flex flex-col md:flex-row">
+            <div className="relative h-48 md:h-auto md:w-72 bg-muted">
+              {course.thumbnail ? (
+                <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
+              ) : null}
+            </div>
+
+            <div className="flex-1 p-6">
+              <p className="arch-kicker">{course.category || "General"}</p>
+              <h3 className="mt-2 text-2xl font-semibold line-clamp-2">{course.title}</h3>
+              <p className="mt-3 text-muted-foreground line-clamp-2">{course.description}</p>
+
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  {course.duration || "Self-paced"}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Star className="h-4 w-4 text-primary" />
+                  {course.rating || "New"}
+                </span>
               </div>
-            )}
-            <div className="absolute top-4 left-4">
-              <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-indigo-600 rounded-full text-xs font-semibold">
-                {course.category || "General"}
+
+              <span className="mt-5 inline-flex items-center gap-2 text-primary">
+                View Course
+                <ArrowRight className="h-4 w-4" />
               </span>
             </div>
           </div>
-
-          {/* Content */}
-          <div className="flex-1 p-6 flex flex-col justify-between">
-            <div>
-              <h3 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                {course.title}
-              </h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
-                {course.description}
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-6 text-sm text-slate-600 dark:text-slate-400">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>{course.duration || "Self-paced"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  <span>{course.students || 0} students</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span>{course.rating || "New"}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold group-hover:gap-4 transition-all">
-                <span>View Course</span>
-                <ArrowRight className="w-5 h-5" />
-              </div>
-            </div>
-          </div>
-        </div>
+        </article>
       </Link>
     );
   }
 
   return (
-    <Link href={`/courses/${course._id}`}>
-      <div className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-        {/* Image */}
-        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600">
+    <Link href={`/courses/${course._id}`} className="block">
+      <article className="arch-panel overflow-hidden transition-colors hover:border-primary">
+        <div className="relative h-48 bg-muted">
           {course.thumbnail ? (
-            <Image
-              src={course.thumbnail}
-              alt={course.title}
-              fill
-              className="object-cover group-hover:scale-110 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <BookOpen className="w-16 h-16 text-white/50" />
-            </div>
-          )}
+            <Image src={course.thumbnail} alt={course.title} fill className="object-cover" />
+          ) : null}
+        </div>
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="p-5">
+          <p className="arch-kicker">{course.category || "General"}</p>
+          <h3 className="mt-2 text-xl font-semibold line-clamp-2">{course.title}</h3>
+          <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{course.description}</p>
 
-          {/* Category Badge */}
-          <div className="absolute top-4 left-4">
-            <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-indigo-600 rounded-full text-xs font-semibold">
-              {course.category || "General"}
+          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              {course.duration || "Self-paced"}
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Star className="h-4 w-4 text-primary" />
+              {course.rating || "New"}
             </span>
           </div>
+
+          <span className="mt-5 inline-flex items-center gap-2 text-primary">
+            Enroll
+            <ArrowRight className="h-4 w-4" />
+          </span>
         </div>
-
-        {/* Content */}
-        <div className="p-6">
-          <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
-            {course.title}
-          </h3>
-
-          <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">
-            {course.description}
-          </p>
-
-          {/* Stats */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800 text-sm text-slate-600 dark:text-slate-400">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>{course.duration || "Self-paced"}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span>{course.rating || "New"}</span>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <button className="mt-4 w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold cursor-pointer transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 flex items-center justify-center gap-2">
-            <span>Enroll Now</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      </article>
     </Link>
   );
 }

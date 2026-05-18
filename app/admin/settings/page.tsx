@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings as SettingsIcon, Save, Globe, Mail, CreditCard, User } from "lucide-react";
+import { CreditCard, Globe, Mail, Save, User } from "lucide-react";
 
 export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
@@ -13,179 +13,125 @@ export default function SettingsPage() {
     enableRegistration: true,
     enablePayments: true,
     currency: "NGN",
-    flutterwavePublicKey: "",
   });
 
   const handleSave = async () => {
     setSaving(true);
-    // Simulate save
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setSaving(false);
     alert("Settings saved successfully!");
   };
 
-  const handleChange = (field: string, value: any) => {
-    setSettings(prev => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string | boolean) => {
+    setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Settings</h1>
-        <p className="text-slate-600 dark:text-slate-400 mt-2">
-          Configure your LMS system settings
-        </p>
-      </div>
+      <section className="arch-panel p-8">
+        <p className="arch-kicker mb-3">Configuration</p>
+        <h1 className="arch-heading-md">Settings</h1>
+        <p className="text-muted-foreground mt-2">Configure LMS operational defaults.</p>
+      </section>
 
-      {/* Settings Sections */}
-      <div className="space-y-6">
-        {/* General Settings */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <Globe className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">General Settings</h2>
-            </div>
+      <section className="arch-panel p-6 space-y-5">
+        <div>
+          <div className="inline-flex items-center gap-2 mb-3">
+            <Globe className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold">General</h2>
           </div>
-          <div className="p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Site Name
-              </label>
+          <div className="grid gap-4">
+            <input
+              value={settings.siteName}
+              onChange={(e) => handleChange("siteName", e.target.value)}
+              className="arch-input"
+              placeholder="Site name"
+            />
+            <textarea
+              value={settings.siteDescription}
+              onChange={(e) => handleChange("siteDescription", e.target.value)}
+              rows={3}
+              className="arch-input"
+              placeholder="Site description"
+            />
+          </div>
+        </div>
+
+        <div className="arch-divider" />
+
+        <div>
+          <div className="inline-flex items-center gap-2 mb-3">
+            <Mail className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold">Email</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <input
+              type="email"
+              value={settings.contactEmail}
+              onChange={(e) => handleChange("contactEmail", e.target.value)}
+              className="arch-input"
+              placeholder="Contact email"
+            />
+            <input
+              type="email"
+              value={settings.supportEmail}
+              onChange={(e) => handleChange("supportEmail", e.target.value)}
+              className="arch-input"
+              placeholder="Support email"
+            />
+          </div>
+        </div>
+
+        <div className="arch-divider" />
+
+        <div>
+          <div className="inline-flex items-center gap-2 mb-3">
+            <CreditCard className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold">Payments</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
               <input
-                type="text"
-                value={settings.siteName}
-                onChange={(e) => handleChange('siteName', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                type="checkbox"
+                checked={settings.enablePayments}
+                onChange={(e) => handleChange("enablePayments", e.target.checked)}
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Site Description
-              </label>
-              <textarea
-                value={settings.siteDescription}
-                onChange={(e) => handleChange('siteDescription', e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
-              />
-            </div>
+              Enable payments
+            </label>
+            <select
+              value={settings.currency}
+              onChange={(e) => handleChange("currency", e.target.value)}
+              className="arch-input"
+            >
+              <option value="NGN">Nigerian Naira (NGN)</option>
+              <option value="USD">US Dollar (USD)</option>
+              <option value="EUR">Euro (EUR)</option>
+              <option value="GBP">British Pound (GBP)</option>
+            </select>
           </div>
         </div>
 
-        {/* Email Settings */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-green-600 dark:text-green-400" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Email Settings</h2>
-            </div>
-          </div>
-          <div className="p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Contact Email
-              </label>
-              <input
-                type="email"
-                value={settings.contactEmail}
-                onChange={(e) => handleChange('contactEmail', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Support Email
-              </label>
-              <input
-                type="email"
-                value={settings.supportEmail}
-                onChange={(e) => handleChange('supportEmail', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
-              />
-            </div>
-          </div>
-        </div>
+        <div className="arch-divider" />
 
-        {/* Payment Settings */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Payment Settings</h2>
-            </div>
+        <div>
+          <div className="inline-flex items-center gap-2 mb-3">
+            <User className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold">User Access</h2>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div>
-                <p className="font-medium text-slate-900 dark:text-white">Enable Payments</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Allow students to purchase courses</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.enablePayments}
-                  onChange={(e) => handleChange('enablePayments', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Currency
-              </label>
-              <select
-                value={settings.currency}
-                onChange={(e) => handleChange('currency', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
-              >
-                <option value="NGN">Nigerian Naira (NGN)</option>
-                <option value="USD">US Dollar (USD)</option>
-                <option value="EUR">Euro (EUR)</option>
-                <option value="GBP">British Pound (GBP)</option>
-              </select>
-            </div>
-          </div>
+          <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={settings.enableRegistration}
+              onChange={(e) => handleChange("enableRegistration", e.target.checked)}
+            />
+            Enable registration
+          </label>
         </div>
+      </section>
 
-        {/* User Settings */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">User Settings</h2>
-            </div>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div>
-                <p className="font-medium text-slate-900 dark:text-white">Enable Registration</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Allow new users to register</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.enableRegistration}
-                  onChange={(e) => handleChange('enableRegistration', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Save Button */}
       <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 text-white font-semibold rounded-xl transition-colors disabled:cursor-not-allowed"
-        >
-          <Save className="w-5 h-5" />
+        <button onClick={handleSave} disabled={saving} className="arch-button">
+          <Save className="w-4 h-4" />
           {saving ? "Saving..." : "Save Settings"}
         </button>
       </div>

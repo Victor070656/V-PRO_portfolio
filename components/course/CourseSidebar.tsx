@@ -20,17 +20,17 @@ export default function CourseSidebar({
   title,
 }: CourseSidebarProps) {
   return (
-    <div className="w-full md:w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full">
-      <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-        <h2 className="font-bold text-slate-900 dark:text-white truncate" title={title}>
+    <div className="w-full md:w-80 bg-card border-r border-border flex flex-col h-full">
+      <div className="p-4 border-b border-border">
+        <h2 className="font-bold text-foreground truncate" title={title}>
           {title}
         </h2>
-        <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        <div className="mt-2 text-sm text-muted-foreground">
           {completedLessonIds.length} / {lessons.length} lessons completed
         </div>
-        <div className="mt-2 h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className="mt-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-green-500 rounded-full transition-all duration-300"
+            className="h-full bg-primary rounded-full transition-all duration-300"
             style={{
               width: `${(completedLessonIds.length / lessons.length) * 100}%`,
             }}
@@ -48,21 +48,21 @@ export default function CourseSidebar({
             <Link
               key={lesson._id?.toString() || index}
               href={`/courses/${courseId}/learn?lessonId=${lesson._id}`}
-              className={`flex items-center gap-3 p-4 border-b border-slate-100 dark:border-slate-800 transition-colors ${
+              className={`flex items-center gap-3 p-4 border-b border-border/70 transition-colors ${
                 isActive
-                  ? "bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-l-indigo-600 dark:border-l-indigo-400"
-                  : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                  ? "bg-secondary border-l-4 border-l-primary"
+                  : "hover:bg-muted"
               }`}
             >
               <div className="flex-shrink-0">
                 {isCompleted ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <CheckCircle className="w-5 h-5 text-primary" />
                 ) : isLocked ? (
-                  <Lock className="w-5 h-5 text-slate-400" />
+                  <Lock className="w-5 h-5 text-muted-foreground" />
                 ) : (
                   <PlayCircle
                     className={`w-5 h-5 ${
-                      isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"
+                      isActive ? "text-primary" : "text-muted-foreground"
                     }`}
                   />
                 )}
@@ -71,13 +71,13 @@ export default function CourseSidebar({
                 <p
                   className={`text-sm font-medium truncate ${
                     isActive
-                      ? "text-indigo-900 dark:text-indigo-100"
-                      : "text-slate-700 dark:text-slate-300"
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {index + 1}. {lesson.title}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {lesson.duration} min
                 </p>
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { MoreVertical, ExternalLink } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 interface Project {
@@ -38,89 +38,45 @@ export default function RecentProjects() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'live':
-        return 'bg-green-100 text-green-800';
-      case 'development':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'maintenance':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
-    <div className="admin-card p-6 rounded-xl h-full">
+    <div className="arch-panel p-6 h-full">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Recent Projects</h3>
-        <Link
-          href="/admin/projects"
-          className="text-sm text-[var(--accent-color)] hover:text-[var(--accent-color)]/80 transition-colors"
-        >
-          View All
+        <h3 className="arch-heading-md">Recent Projects</h3>
+        <Link href="/admin/projects" className="text-sm text-primary hover:underline">
+          View all
         </Link>
       </div>
 
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {[...Array(3)].map((_, index) => (
-            <div key={index} className="flex items-center gap-4 animate-pulse">
-              <div className="w-12 h-12 bg-[var(--secondary-color)] rounded-lg"></div>
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-[var(--secondary-color)] rounded w-2/3"></div>
-                <div className="h-3 bg-[var(--secondary-color)] rounded w-1/2"></div>
-              </div>
-            </div>
+            <div key={index} className="h-14 rounded bg-muted animate-pulse" />
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-[var(--text-secondary)] mb-4">No projects yet</p>
-          <Link
-            href="/admin/projects"
-            className="inline-flex items-center gap-2 bg-[var(--accent-color)] text-white px-4 py-2 rounded-lg text-sm hover:bg-[var(--accent-color)]/90 transition-colors"
-          >
-            Add Your First Project
-          </Link>
-        </div>
+        <div className="text-center py-8 text-muted-foreground">No projects yet.</div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {projects.map((project) => (
-            <div key={project._id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-[var(--secondary-color)] transition-colors">
-              <div className="w-12 h-12 rounded-lg overflow-hidden bg-[var(--secondary-color)] flex-shrink-0">
-                <img
-                  src={project.imageUrl}
-                  alt={project.name}
-                  className="w-full h-full object-cover"
-                />
+            <div key={project._id} className="flex items-center gap-3 rounded border border-border p-3">
+              <div className="w-10 h-10 rounded overflow-hidden bg-muted shrink-0">
+                {project.imageUrl ? (
+                  <img src={project.imageUrl} alt={project.name} className="w-full h-full object-cover" />
+                ) : null}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-[var(--text-primary)] truncate">{project.name}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                    {project.status}
-                  </span>
-                  <span className="text-xs text-[var(--text-secondary)]">
-                    {project.category}
-                  </span>
-                </div>
+                <p className="text-sm font-medium truncate">{project.name}</p>
+                <p className="text-xs text-muted-foreground">{project.status}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition-colors"
-                  title="View project"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-                <button className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-              </div>
+              <a
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                title="View project"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
           ))}
         </div>

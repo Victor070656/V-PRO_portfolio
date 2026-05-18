@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import CourseForm from "@/components/admin/CourseForm";
 import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa";
@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 
 export default function EditCoursePage() {
   const params = useParams();
-  const [course, setCourse] = useState(null);
+  const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,20 +34,20 @@ export default function EditCoursePage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
   }
 
   if (!course) {
-    return <div className="p-8 text-center">Course not found</div>;
+    return <div className="p-8 text-center text-muted-foreground">Course not found</div>;
   }
 
   return (
-    <div className="p-8 overflow-y-auto h-full">
-      <div className="mb-8">
-        <Link href="/admin/courses" className="text-[var(--text-secondary)] hover:text-[var(--accent-color)] flex items-center gap-2 mb-4">
+    <div className="space-y-6">
+      <div>
+        <Link href="/admin/courses" className="text-muted-foreground hover:text-primary flex items-center gap-2 mb-4">
           <FaArrowLeft /> Back to Courses
         </Link>
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">Edit Course</h1>
+        <h1 className="arch-heading-md">Edit Course</h1>
       </div>
 
       <CourseForm initialData={course} isEdit={true} />
