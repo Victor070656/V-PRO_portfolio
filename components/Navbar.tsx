@@ -108,7 +108,7 @@ export default function Navbar() {
             {session ? (
               <>
                 {/* User is authenticated */}
-                {session.user?.role === "admin" && (
+                {session.user?.role === "admin" ? (
                   <Link
                     href="/admin"
                     className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-color)] hover:bg-opacity-90 text-white rounded-lg text-sm font-medium transition-colors"
@@ -116,12 +116,22 @@ export default function Navbar() {
                     <LayoutDashboard className="w-4 h-4" />
                     Admin
                   </Link>
+                ) : (
+                  <Link
+                    href="/student/dashboard"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-color)] hover:bg-opacity-90 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </Link>
                 )}
 
                 <div className="flex items-center gap-2 px-3 py-2 bg-[var(--secondary-color)] rounded-lg">
                   <User className="w-4 h-4 text-[var(--text-secondary)]" />
                   <span className="text-sm text-[var(--text-primary)]">
-                    {session.user?.name || session.user?.email?.split("@")[0] || "User"}
+                    {session.user?.name ||
+                      session.user?.email?.split("@")[0] ||
+                      "User"}
                   </span>
                 </div>
 
@@ -210,7 +220,7 @@ export default function Navbar() {
               {/* Authentication-aware mobile links */}
               {session && (
                 <>
-                  {session.user?.role === "admin" && (
+                  {session.user?.role === "admin" ? (
                     <Link
                       onClick={() => setIsOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--accent-color)] text-white transition-colors"
@@ -219,16 +229,29 @@ export default function Navbar() {
                       <LayoutDashboard className="w-4 h-4" />
                       Admin Dashboard
                     </Link>
+                  ) : (
+                    <Link
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--accent-color)] text-white transition-colors"
+                      href="/student/dashboard"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Student Dashboard
+                    </Link>
                   )}
 
                   <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--hover-color)]">
                     <User className="w-4 h-4 text-[var(--text-secondary)]" />
                     <div className="text-left">
                       <p className="text-sm font-medium text-[var(--text-primary)]">
-                        {session.user?.name || session.user?.email?.split("@")[0] || "User"}
+                        {session.user?.name ||
+                          session.user?.email?.split("@")[0] ||
+                          "User"}
                       </p>
                       <p className="text-xs text-[var(--text-secondary)]">
-                        {session.user?.role === "admin" ? "Administrator" : "Student"}
+                        {session.user?.role === "admin"
+                          ? "Administrator"
+                          : "Student"}
                       </p>
                     </div>
                   </div>
