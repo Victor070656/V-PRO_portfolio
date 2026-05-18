@@ -24,29 +24,40 @@ export default function LearnPage() {
   const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
-    fetchCourseData();
-    
+    let isMounted = true;
+    let fetchCompleted = false;
+
+    const doFetch = async () => {
+      await fetchCourseData(isMounted);
+      fetchCompleted = true;
+    };
+
+    doFetch();
+
     // Timeout fallback
     const timeout = setTimeout(() => {
-      if (loading) {
+      if (isMounted && !fetchCompleted) {
         console.error("Loading timeout - forcing error state");
         setLoading(false);
         setError("Loading timeout. Please try again.");
       }
     }, 10000); // 10 second timeout
-    
-    return () => clearTimeout(timeout);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
   }, [courseId]);
 
   useEffect(() => {
-    console.log("Course state:", { 
-      hasCourse: !!course, 
+    console.log("Course state:", {
+      hasCourse: !!course,
       lessonsCount: course?.lessons?.length,
       lessonId,
       hasRedirected,
-      currentLesson: !!currentLesson
+      currentLesson: !!currentLesson,
     });
-    
+
     if (course && course.lessons && course.lessons.length > 0) {
       if (!lessonId && !hasRedirected) {
         // Redirect to first lesson if no lessonId provided
@@ -54,10 +65,14 @@ export default function LearnPage() {
         console.log("Redirecting to first lesson:", firstLessonId);
         if (firstLessonId) {
           setHasRedirected(true);
-          router.replace(`/courses/${courseId}/learn?lessonId=${firstLessonId}`);
+          router.replace(
+            `/courses/${courseId}/learn?lessonId=${firstLessonId}`,
+          );
         }
       } else if (lessonId) {
-        const lesson = course.lessons.find(l => l._id?.toString() === lessonId);
+        const lesson = course.lessons.find(
+          (l) => l._id?.toString() === lessonId,
+        );
         console.log("Found lesson:", !!lesson);
         if (lesson) {
           setCurrentLesson(lesson);
@@ -69,39 +84,45 @@ export default function LearnPage() {
     }
   }, [course, lessonId, courseId, router, hasRedirected]);
 
-  const fetchCourseData = async () => {
+  const fetchCourseData = async (isMounted = true) => {
     try {
       console.log("Fetching course:", courseId);
-      
+
       // Fetch course details
       const courseRes = await fetch(`/api/courses/${courseId}`);
       console.log("Course response status:", courseRes.status);
-      
+
       if (!courseRes.ok) {
         throw new Error(`Failed to fetch course: ${courseRes.status}`);
       }
-      
+
       const courseData = await courseRes.json();
       console.log("Course data:", courseData);
-      
-      if (courseData.course) {
-        setCourse(courseData.course);
-        
-        // Use enrollment data from course API response
-        if (courseData.enrollment) {
-          const completedIds = courseData.enrollment.completedLessons?.map((id: any) => 
-            typeof id === 'string' ? id : id.toString()
-          ) || [];
-          setCompletedLessons(completedIds);
+
+      if (isMounted) {
+        if (courseData.course) {
+          setCourse(courseData.course);
+
+          // Use enrollment data from course API response
+          if (courseData.enrollment) {
+            const completedIds =
+              courseData.enrollment.completedLessons?.map((id: any) =>
+                typeof id === "string" ? id : id.toString(),
+              ) || [];
+            setCompletedLessons(completedIds);
+          }
+        } else {
+          setError("Course not found");
         }
-      } else {
-        setError("Course not found");
       }
     } catch (error) {
       console.error("Error fetching course data:", error);
-      setError(error instanceof Error ? error.message : "Failed to load course");
+      if (isMounted)
+        setError(
+          error instanceof Error ? error.message : "Failed to load course",
+        );
     } finally {
-      setLoading(false);
+      if (isMounted) setLoading(false);
     }
   };
 
@@ -116,7 +137,9 @@ export default function LearnPage() {
 
   const fetchLessonProgress = async (lessonId: string) => {
     try {
-      const res = await fetch(`/api/courses/${courseId}/lessons/${lessonId}/progress`);
+      const res = await fetch(
+        `/api/courses/${courseId}/lessons/${lessonId}/progress`,
+      );
       if (res.ok) {
         const data = await res.json();
         if (data.progress?.lastPosition) {
@@ -134,16 +157,18 @@ export default function LearnPage() {
     try {
       // Optimistic update
       if (!completedLessons.includes(completedLessonId)) {
-        setCompletedLessons(prev => [...prev, completedLessonId]);
+        setCompletedLessons((prev) => [...prev, completedLessonId]);
       }
 
       // API call to update progress
-      await fetch(`/api/courses/${courseId}/lessons/${completedLessonId}/progress`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: true }),
-      });
-      
+      await fetch(
+        `/api/courses/${courseId}/lessons/${completedLessonId}/progress`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ completed: true }),
+        },
+      );
     } catch (error) {
       console.error("Error updating progress:", error);
     }
@@ -154,7 +179,9 @@ export default function LearnPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
-          <p className="text-slate-600 dark:text-slate-400">Loading course...</p>
+          <p className="text-slate-600 dark:text-slate-400">
+            Loading course...
+          </p>
         </div>
       </div>
     );
@@ -164,7 +191,9 @@ export default function LearnPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Error Loading Course</h2>
+          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
+            Error Loading Course
+          </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-6">{error}</p>
           <div className="flex gap-4 justify-center">
             <button
@@ -189,13 +218,16 @@ export default function LearnPage() {
     );
   }
 
-
   if (!course) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Course Not Found</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">Unable to load course content.</p>
+          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
+            Course Not Found
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            Unable to load course content.
+          </p>
           <Link
             href="/courses"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-300"
@@ -215,7 +247,9 @@ export default function LearnPage() {
           <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">No Lessons Available</h2>
+          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
+            No Lessons Available
+          </h2>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
             This course doesn't have any lessons yet. Please check back later.
           </p>
@@ -239,20 +273,34 @@ export default function LearnPage() {
   }
 
   // Find next/prev lesson IDs
-  const currentIndex = course.lessons.findIndex(l => l._id?.toString() === currentLesson._id?.toString());
-  const nextLessonId = currentIndex < course.lessons.length - 1 ? course.lessons[currentIndex + 1]._id?.toString() : undefined;
-  const prevLessonId = currentIndex > 0 ? course.lessons[currentIndex - 1]._id?.toString() : undefined;
+  const currentIndex = course.lessons.findIndex(
+    (l) => l._id?.toString() === currentLesson._id?.toString(),
+  );
+  const nextLessonId =
+    currentIndex < course.lessons.length - 1
+      ? course.lessons[currentIndex + 1]._id?.toString()
+      : undefined;
+  const prevLessonId =
+    currentIndex > 0
+      ? course.lessons[currentIndex - 1]._id?.toString()
+      : undefined;
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
       {/* Mobile Header */}
       <div className="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between z-20">
-        <h1 className="font-bold truncate mr-4 text-slate-900 dark:text-white">{course.title}</h1>
+        <h1 className="font-bold truncate mr-4 text-slate-900 dark:text-white">
+          {course.title}
+        </h1>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
         >
-          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {sidebarOpen ? (
+            <X className="w-6 h-6" />
+          ) : (
+            <Menu className="w-6 h-6" />
+          )}
         </button>
       </div>
 
@@ -260,40 +308,50 @@ export default function LearnPage() {
         {/* Sidebar */}
         <div
           className={`absolute md:relative z-10 h-full transition-transform duration-300 transform ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-0 md:overflow-hidden"
+            sidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0 md:w-0 md:overflow-hidden"
           } md:translate-x-0`}
         >
-           <div className={`${sidebarOpen ? 'w-80' : 'w-0'} h-full transition-all duration-300 overflow-hidden`}>
+          <div
+            className={`${sidebarOpen ? "w-80" : "w-0"} h-full transition-all duration-300 overflow-hidden`}
+          >
             <CourseSidebar
-                courseId={courseId}
-                lessons={course.lessons}
-                currentLessonId={currentLesson._id?.toString() || ""}
-                completedLessonIds={completedLessons}
-                title={course.title}
+              courseId={courseId}
+              lessons={course.lessons}
+              currentLessonId={currentLesson._id?.toString() || ""}
+              completedLessonIds={completedLessons}
+              title={course.title}
             />
-           </div>
+          </div>
         </div>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 relative">
-            {/* Desktop Sidebar Toggle */}
-            <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="hidden md:flex absolute top-4 left-4 z-20 bg-white dark:bg-slate-800 p-2 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                title={sidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
-            >
-                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+          {/* Desktop Sidebar Toggle */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="hidden md:flex absolute top-4 left-4 z-20 bg-white dark:bg-slate-800 p-2 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            title={sidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+          >
+            {sidebarOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
 
-            <LessonContent
-                courseId={courseId}
-                lesson={currentLesson}
-                nextLessonId={nextLessonId}
-                prevLessonId={prevLessonId}
-                onComplete={handleLessonComplete}
-                isCompleted={completedLessons.includes(currentLesson._id?.toString() || "")}
-                initialProgress={initialProgress}
-            />
+          <LessonContent
+            courseId={courseId}
+            lesson={currentLesson}
+            nextLessonId={nextLessonId}
+            prevLessonId={prevLessonId}
+            onComplete={handleLessonComplete}
+            isCompleted={completedLessons.includes(
+              currentLesson._id?.toString() || "",
+            )}
+            initialProgress={initialProgress}
+          />
         </div>
       </div>
     </div>
