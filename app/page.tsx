@@ -195,8 +195,8 @@ export default function Home() {
 
             <p className="mt-8 text-base text-muted-foreground max-w-2xl leading-relaxed font-light">
               Systems-first software developer and technical educator based in
-              Port Harcourt, Nigeria. I engineer production-grade Next.js
-              systems, optimize MongoDB database architectures, and construct
+              Port Harcourt, Nigeria. I engineer production-grade Fullstack
+              systems, optimize database architectures, and construct
               structured learning platforms for practical developer mastery.
             </p>
 

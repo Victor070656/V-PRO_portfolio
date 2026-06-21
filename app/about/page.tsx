@@ -38,10 +38,13 @@ const principles = [
 ];
 
 const stack = [
+  "PHP",
+  "Laravel",
   "Next.js",
   "React",
   "TypeScript",
   "Node.js",
+  "MySQL",
   "MongoDB",
   "Tailwind CSS",
   "API Design",
