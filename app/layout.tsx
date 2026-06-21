@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Kanit, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 
-const hanken = Hanken_Grotesk({
-  variable: "--font-hanken",
+const kanit = Kanit({
+  variable: "--font-kanit",
+  weight: ["300", "400", "700"],
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -14,8 +20,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "V-PRO Services",
-  description: "Personal developer porfolio for Victor Ikechukwu",
+  title: "V-PRO Services & LMS",
+  description: "Creative developer dashboard and LMS platform",
 };
 
 export default function RootLayout({
@@ -26,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${hanken.variable} ${jetbrains.variable} antialiased`}
+        className={`${kanit.variable} ${inter.variable} ${jetbrains.variable} antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
       </body>
