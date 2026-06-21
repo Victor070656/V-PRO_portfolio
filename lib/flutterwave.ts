@@ -72,30 +72,28 @@ export interface PaymentWebhookData {
 }
 
 class FlutterwaveService {
-  private flw: any;
+  private flw: any = null;
 
   constructor() {
+    // Lazy initialize at runtime to prevent Next.js build-time compile crashes
+  }
+
+  private initFlw() {
+    if (this.flw) return;
+
     const publicKey = process.env.FLUTTERWAVE_PUBLIC_KEY || "";
     const secretKey = process.env.FLUTTERWAVE_SECRET_KEY || "";
 
     if (!publicKey || !secretKey) {
-      console.error("Flutterwave credentials not configured");
-      throw new Error("Flutterwave credentials are required");
+      console.warn("Flutterwave credentials not configured. Running in sandbox simulation mode.");
+      return;
     }
 
     try {
-      console.log("Initializing Flutterwave with real credentials...");
+      console.log("Initializing Flutterwave client...");
       this.flw = new Flutterwave(publicKey, secretKey);
-
-      // Test basic initialization - the library structure may be different
-      console.log("Flutterwave instance created:", typeof this.flw);
-
-      // For flutterwave-node-v3, the API structure might be different
-      // Let's initialize without strict method checking for now
-      console.log("Flutterwave initialized successfully with real API");
     } catch (error) {
       console.error("Flutterwave initialization error:", error);
-      throw new Error("Failed to initialize Flutterwave service");
     }
   }
 
@@ -251,6 +249,13 @@ class FlutterwaveService {
     error?: string;
   }> {
     try {
+      this.initFlw();
+      if (!this.flw) {
+        return {
+          success: false,
+          error: "Flutterwave service is not configured"
+        };
+      }
       const response = await this.flw.Transaction.find({ id: transactionId });
 
       if (response.status === "success") {

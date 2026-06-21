@@ -101,13 +101,13 @@ export default function Home() {
   const [dbCourses, setDbCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
 
-  // 3D Simulator State
-  const [rotationX, setRotationX] = useState(25);
-  const [rotationY, setRotationY] = useState(45);
-  const [zoom, setZoom] = useState(1);
-  const [metallic, setMetallic] = useState(70);
-  const [roughness, setRoughness] = useState(30);
-  const [wireframe, setWireframe] = useState(false);
+  // Glassmorphic Customizer State
+  const [borderRadius, setBorderRadius] = useState(16);
+  const [glassBlur, setGlassBlur] = useState(20);
+  const [glassOpacity, setGlassOpacity] = useState(4);
+  const [glowIntensity, setGlowIntensity] = useState(10);
+  const [borderThickness, setBorderThickness] = useState(1);
+  const [activeWidget, setActiveWidget] = useState<"course" | "payment" | "stats">("course");
 
   // Code compiler state
   const [codeTab, setCodeTab] = useState<"next" | "db" | "payment">("next");
@@ -151,12 +151,12 @@ export default function Home() {
   };
 
   const reset3D = () => {
-    setRotationX(25);
-    setRotationY(45);
-    setZoom(1);
-    setMetallic(70);
-    setRoughness(30);
-    setWireframe(false);
+    setBorderRadius(16);
+    setGlassBlur(20);
+    setGlassOpacity(4);
+    setGlowIntensity(10);
+    setBorderThickness(1);
+    setActiveWidget("course");
   };
 
   const displayedCourses = dbCourses.length > 0 ? dbCourses : FEATURED_COURSES;
@@ -179,12 +179,12 @@ export default function Home() {
             </div>
             
             <h1 className="display-lg text-foreground tracking-tight select-none">
-              3D Creator <br />
-              <span className="text-primary">&amp; LMS Architect</span>
+              Full-Stack <br />
+              <span className="text-primary">Next.js &amp; LMS Architect</span>
             </h1>
 
             <p className="mt-8 text-base text-muted-foreground max-w-2xl leading-relaxed font-light">
-              High-performance web architecture meets interactive educational software. I engineer state-of-the-art Next.js systems, high-efficiency MongoDB schemas, and complete learning management systems. Tweak parameters or explore course curriculums below.
+              High-performance web applications meet interactive educational platforms. I engineer production-grade Next.js systems, high-efficiency MongoDB schemas, and customized learning environments. Tweak variables in the designer or explore courses below.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
@@ -197,7 +197,7 @@ export default function Home() {
                 <Briefcase className="w-4 h-4" />
               </Link>
               <a href="#workspace" className="arch-button-secondary text-sm border-white/10 hover:border-white/30">
-                Launch Creator Studio
+                Try Live Customizer
                 <ArrowRight className="w-3 h-3 text-primary" />
               </a>
             </div>
@@ -268,25 +268,25 @@ export default function Home() {
         {/* Workspace Title */}
         <section className="text-center max-w-3xl mx-auto space-y-4">
           <p className="arch-kicker text-primary">Interactive Suite</p>
-          <h2 className="arch-heading-lg text-foreground">Experience What I Can Do</h2>
+          <h2 className="arch-heading-lg text-foreground">Interactive Interface Engineering</h2>
           <p className="text-muted-foreground text-sm font-light">
-            Adjust the sliders below to transform 3D shapes in real-time, or select backend architectures to run in our code verification sandbox.
+            Tweak the visual design parameters below to compile custom CSS layouts in real-time, or select active backend schemas to run in our sandbox.
           </p>
         </section>
 
         {/* Studio & Sandbox Dashboard Mockup */}
         <section className="grid gap-8 lg:grid-cols-12">
           
-          {/* Left Block: 3D Creator Studio Mockup (7 Columns) */}
-          <div className="lg:col-span-7 flex flex-col justify-between border border-white/10 bg-white/[0.02] backdrop-blur-md rounded-lg overflow-hidden p-6 md:p-8 space-y-8">
+          {/* Left Block: Glassmorphic UI Designer Customizer (7 Columns) */}
+          <div className="lg:col-span-7 flex flex-col justify-between border border-white/10 bg-white/[0.02] backdrop-blur-md rounded-2xl overflow-hidden p-6 md:p-8 space-y-8">
             <div>
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div>
                   <h3 className="font-semibold text-lg flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary" />
-                    3D Interface Controller
+                    Glassmorphic UI Compiler
                   </h3>
-                  <p className="text-xs text-muted-foreground">Real-time WebGL transform simulator</p>
+                  <p className="text-xs text-muted-foreground">Adjust design system variables in real-time</p>
                 </div>
                 <button 
                   onClick={reset3D}
@@ -296,134 +296,182 @@ export default function Home() {
                 </button>
               </div>
 
+              {/* Widget Layout Selectors */}
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => setActiveWidget("course")}
+                  className={`text-xs px-3.5 py-1.5 rounded-full border transition-all ${
+                    activeWidget === "course"
+                      ? "bg-primary border-primary text-primary-foreground font-bold"
+                      : "border-white/10 text-muted-foreground hover:bg-white/5"
+                  }`}
+                >
+                  Course Progress
+                </button>
+                <button
+                  onClick={() => setActiveWidget("payment")}
+                  className={`text-xs px-3.5 py-1.5 rounded-full border transition-all ${
+                    activeWidget === "payment"
+                      ? "bg-primary border-primary text-primary-foreground font-bold"
+                      : "border-white/10 text-muted-foreground hover:bg-white/5"
+                  }`}
+                >
+                  Payment Badge
+                </button>
+                <button
+                  onClick={() => setActiveWidget("stats")}
+                  className={`text-xs px-3.5 py-1.5 rounded-full border transition-all ${
+                    activeWidget === "stats"
+                      ? "bg-primary border-primary text-primary-foreground font-bold"
+                      : "border-white/10 text-muted-foreground hover:bg-white/5"
+                  }`}
+                >
+                  Stats Card
+                </button>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-6 mt-8">
                 {/* Sliders Control Block */}
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-mono">
-                      <span className="text-muted-foreground">Rotate X</span>
-                      <span className="text-primary">{rotationX}°</span>
+                      <span className="text-muted-foreground">Border Radius</span>
+                      <span className="text-primary">{borderRadius}px</span>
                     </div>
                     <input
                       type="range"
-                      min="-180"
-                      max="180"
-                      value={rotationX}
-                      onChange={(e) => setRotationX(Number(e.target.value))}
+                      min="0"
+                      max="32"
+                      value={borderRadius}
+                      onChange={(e) => setBorderRadius(Number(e.target.value))}
                       className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-mono">
-                      <span className="text-muted-foreground">Rotate Y</span>
-                      <span className="text-primary">{rotationY}°</span>
+                      <span className="text-muted-foreground">Glass Blur</span>
+                      <span className="text-primary">{glassBlur}px</span>
                     </div>
                     <input
                       type="range"
-                      min="-180"
-                      max="180"
-                      value={rotationY}
-                      onChange={(e) => setRotationY(Number(e.target.value))}
+                      min="0"
+                      max="40"
+                      value={glassBlur}
+                      onChange={(e) => setGlassBlur(Number(e.target.value))}
                       className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-mono">
-                      <span className="text-muted-foreground">Scale</span>
-                      <span className="text-primary">{zoom.toFixed(2)}x</span>
+                      <span className="text-muted-foreground">Opacity (Shine)</span>
+                      <span className="text-primary">{glassOpacity}%</span>
                     </div>
                     <input
                       type="range"
-                      min="0.5"
-                      max="1.5"
-                      step="0.05"
-                      value={zoom}
-                      onChange={(e) => setZoom(Number(e.target.value))}
+                      min="1"
+                      max="30"
+                      value={glassOpacity}
+                      onChange={(e) => setGlassOpacity(Number(e.target.value))}
                       className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-mono">
-                      <span className="text-muted-foreground">Metallic Finish</span>
-                      <span className="text-primary">{metallic}%</span>
+                      <span className="text-muted-foreground">Glow Intensity</span>
+                      <span className="text-primary">{glowIntensity}px</span>
                     </div>
                     <input
                       type="range"
-                      min="10"
-                      max="100"
-                      value={metallic}
-                      onChange={(e) => setMetallic(Number(e.target.value))}
+                      min="0"
+                      max="40"
+                      value={glowIntensity}
+                      onChange={(e) => setGlowIntensity(Number(e.target.value))}
                       className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-6">
-                    <span className="text-xs text-muted-foreground font-mono">Wireframe Mode</span>
-                    <button
-                      onClick={() => setWireframe(!wireframe)}
-                      className={`text-xs px-3 py-1 rounded-full border transition-all ${
-                        wireframe 
-                          ? "bg-primary border-primary text-primary-foreground font-bold" 
-                          : "border-white/10 text-muted-foreground hover:bg-white/5"
-                      }`}
-                    >
-                      {wireframe ? "Enabled" : "Disabled"}
-                    </button>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-mono">
+                      <span className="text-muted-foreground">Border Thickness</span>
+                      <span className="text-primary">{borderThickness}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="4"
+                      value={borderThickness}
+                      onChange={(e) => setBorderThickness(Number(e.target.value))}
+                      className="w-full accent-primary h-1 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                    />
                   </div>
                 </div>
 
-                {/* Real-time CSS 3D Viewport Rendering Canvas */}
-                <div className="relative h-64 md:h-auto border border-white/10 bg-black/60 rounded-md flex items-center justify-center overflow-hidden">
-                  <div className="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15)_0%,transparent_100%)]"></div>
+                {/* Real-time Render Visualizer Canvas */}
+                <div className="relative h-64 md:h-auto border border-white/10 bg-black/60 rounded-xl flex items-center justify-center overflow-hidden p-6">
+                  {/* Decorative mesh */}
+                  <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(to_right,rgba(255,11,11,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,11,11,0.06)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
                   
-                  {/* CSS 3D Cube Container */}
+                  {/* Dynamic Glass Component Card */}
                   <div 
-                    className="cube-viewport"
                     style={{
-                      perspective: "800px",
-                      width: "140px",
-                      height: "140px",
+                      borderRadius: `${borderRadius}px`,
+                      backdropFilter: `blur(${glassBlur}px)`,
+                      WebkitBackdropFilter: `blur(${glassBlur}px)`,
+                      background: `rgba(255, 255, 255, ${glassOpacity / 100})`,
+                      border: `${borderThickness}px solid rgba(255, 255, 255, 0.15)`,
+                      boxShadow: `0 8px 32px 0 rgba(0, 0, 0, 0.4), 0 0 ${glowIntensity}px rgba(255, 11, 11, ${glowIntensity / 70})`,
+                      transition: "all 0.1s ease-out",
                     }}
+                    className="p-6 w-full max-w-[260px] text-left select-none relative z-10"
                   >
-                    <div 
-                      className="cube-element"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        position: "relative",
-                        transformStyle: "preserve-3d",
-                        transform: `rotateX(${rotationX}deg) rotateY(${rotationY}deg) scale(${zoom})`,
-                        transition: "transform 0.05s ease-out",
-                      }}
-                    >
-                      {/* CSS 3D Faces */}
-                      {[
-                        { transform: "translateZ(70px)", text: "3D" },
-                        { transform: "rotateY(180deg) translateZ(70px)", text: "LMS" },
-                        { transform: "rotateY(-90deg) translateZ(70px)", text: "NEXT" },
-                        { transform: "rotateY(90deg) translateZ(70px)", text: "DB" },
-                        { transform: "rotateX(90deg) translateZ(70px)", text: "API" },
-                        { transform: "rotateX(-90deg) translateZ(70px)", text: "NODE" }
-                      ].map((face, index) => (
-                        <div 
-                          key={index} 
-                          className="absolute inset-0 border flex items-center justify-center font-mono text-xs font-bold transition-all"
-                          style={{
-                            transform: face.transform,
-                            background: wireframe ? "transparent" : `rgba(255, 11, 11, ${metallic / 450})`,
-                            borderColor: wireframe ? "#FF0B0B" : "rgba(255, 255, 255, 0.4)",
-                            borderWidth: wireframe ? "2px" : "1px",
-                            boxShadow: wireframe ? "0 0 10px rgba(255, 11, 11, 0.5)" : "none",
-                            color: wireframe ? "#FF0B0B" : "#D7E2EA",
-                          }}
-                        >
-                          {face.text}
+                    {activeWidget === "course" && (
+                      <div className="space-y-4">
+                        <div>
+                          <span className="text-[10px] text-primary uppercase font-mono tracking-wider font-semibold">Web Development</span>
+                          <h4 className="font-bold text-sm text-foreground mt-1 line-clamp-1">Next.js Production API</h4>
                         </div>
-                      ))}
-                    </div>
+                        <div className="space-y-1">
+                          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-primary h-full w-[70%]" style={{ borderRadius: `${borderRadius / 2}px` }} />
+                          </div>
+                          <div className="flex justify-between text-[10px] text-muted-foreground">
+                            <span>Progress</span>
+                            <span className="text-foreground font-mono">70%</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeWidget === "payment" && (
+                      <div className="space-y-3 flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground uppercase font-mono">Gateway Receipt</span>
+                          <span className="text-[9px] bg-green-500/20 text-green-400 border border-green-800 px-2 py-0.5 rounded-full font-mono">Paid</span>
+                        </div>
+                        <div>
+                          <h4 className="text-xs text-muted-foreground">Transaction ID</h4>
+                          <p className="text-sm font-mono font-bold text-foreground mt-0.5">flw-vpro-789a2</p>
+                        </div>
+                        <div className="border-t border-white/10 pt-2 flex justify-between items-center">
+                          <span className="text-[10px] text-muted-foreground">Amount</span>
+                          <span className="text-xs font-bold text-foreground font-mono">$89.99</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeWidget === "stats" && (
+                      <div className="space-y-2">
+                        <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">Verified Learners</span>
+                        <div className="flex items-baseline gap-2">
+                          <h4 className="text-3xl font-bold text-foreground font-display">5,420</h4>
+                          <span className="text-[10px] text-green-400 font-bold font-mono">▲ +12%</span>
+                        </div>
+                        <p className="text-[9px] text-muted-foreground leading-snug">Global student enrollment counts across Next.js and MongoDB routes.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -431,7 +479,7 @@ export default function Home() {
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground border-t border-white/10 pt-4">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span>3D hardware acceleration enabled via Matrix Transform CSS.</span>
+              <span>Real-time CSS styling variables sync with React state handles.</span>
             </div>
           </div>
 
