@@ -184,7 +184,7 @@ export default function Home() {
             </h1>
 
             <p className="mt-8 text-base text-muted-foreground max-w-2xl leading-relaxed font-light">
-              High-performance web applications meet interactive educational platforms. I engineer production-grade Next.js systems, high-efficiency MongoDB schemas, and customized learning environments. Tweak variables in the designer or explore courses below.
+              Systems-first software developer and technical educator based in Port Harcourt, Nigeria. I engineer production-grade Next.js systems, optimize MongoDB database architectures, and construct structured learning platforms for practical developer mastery.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">

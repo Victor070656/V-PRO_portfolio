@@ -67,49 +67,51 @@ export default function CoursesPage() {
           </p>
         </section>
 
-        <section className="arch-panel p-6 space-y-5">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search courses..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="arch-input pl-11"
-            />
-          </div>
-
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={
-                    selectedCategory === category
-                      ? "arch-button !px-4 !py-2"
-                      : "arch-button-secondary !px-4 !py-2"
-                  }
-                >
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </button>
-              ))}
+        <section className="gradient-shell-wrap">
+          <div className="gradient-shell-inner p-6 space-y-5">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="arch-input pl-11"
+              />
             </div>
 
-            <div className="flex items-center rounded border border-border bg-muted p-1">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`rounded p-2 ${viewMode === "grid" ? "bg-card text-foreground" : "text-muted-foreground"}`}
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`rounded p-2 ${viewMode === "list" ? "bg-card text-foreground" : "text-muted-foreground"}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={
+                      selectedCategory === category
+                        ? "arch-button !px-4 !py-2"
+                        : "arch-button-secondary !px-4 !py-2"
+                    }
+                  >
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center rounded border border-border bg-muted p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`rounded p-2 ${viewMode === "grid" ? "bg-card text-foreground" : "text-muted-foreground"}`}
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`rounded p-2 ${viewMode === "list" ? "bg-card text-foreground" : "text-muted-foreground"}`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </section>
