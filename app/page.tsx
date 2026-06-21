@@ -189,8 +189,8 @@ export default function Home() {
             </div>
 
             <h1 className="display-lg text-foreground tracking-tight select-none">
-              ARCHITECTING SYSTEMS. <br />
-              <span className="text-primary">EMPOWERING DEVELOPERS.</span>
+              ENGINEER & <br />
+              <span className="text-primary">MENTOR</span>
             </h1>
 
             <p className="mt-8 text-base text-muted-foreground max-w-2xl leading-relaxed font-light">
